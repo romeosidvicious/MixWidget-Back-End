@@ -1,0 +1,10 @@
+v0.1a
+
+Fix index.php in root directory
+Fix mixes.include
+Add list of mixes to main page in admin
+Fix style.css for mixes/
+Add in handler for cover.jpg
+Add validate to the menu
+Add license information to script
+Clean up getid3

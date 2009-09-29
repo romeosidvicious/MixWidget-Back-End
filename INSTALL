@@ -1,0 +1,6 @@
+Place all files in a web accessible directory
+Password protect admin/
+Run admin/mwbe.php?action=validate
+Create any missing directories
+Fix any permission problems
+Start making mixes
