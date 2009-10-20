@@ -1,6 +1,13 @@
+I will provide ftp directions and such once this is ready for prime time. Until then you get this:
+
 Place all files in a web accessible directory
 Password protect admin/
 Run admin/mwbe.php?action=validate
 Create any missing directories
 Fix any permission problems
 Start making mixes
+
+THIS SCRIPT LETS FILES BE UPLOADED TO YOUR WEBHOST
+IF YOU DON'T PASSWORD PROTECT /admin DO NOT WHINE TO ME WHEN YOUR SEVER GETS 0WNED.
+
+I do not provide instructions on how to password protect your directory because if you don't know how already then this script isn't ready for you to use.
