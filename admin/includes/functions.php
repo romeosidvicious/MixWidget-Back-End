@@ -12,6 +12,8 @@ function menu() {
 		verify();
 	} elseif ($action == "validate") {
 		validate();
+	} elseif ($action == "editmix") {
+		editmix();
 	} else {
 		def();
 	}
@@ -19,25 +21,68 @@ function menu() {
 
 
 function def() {
-	global $mwbe_dir;
+	global $mwbe_dir, $mwbe_server_path, $mwbe_conf_dir;
 	echo <<<_END
 			<ul id="tabmenu">
-			<li><a class="active" href="mwbe.php?action=def">Main</a>
-			<li><a href="mwbe.php?action=makemix">Make A Mix</a>
+			<li><a class="active" href="mwbe.php?action=def">Main</a></li>
+			<li><a href="mwbe.php?action=makemix">Make A Mix</a></li>
+			<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
 		</ul>
+		</div>
 		<div id="content">
-			<ul>
-				<li><a href="mwbe.php?action=validate">Validate the File Structure</a /></li />
-				<li>Create a Mix by Uploading Single Files</li />
-				<li>Create a Mix by Uploading a .zip File</li />
-				<li>Create a Mix by Uploading a .tar File</li />
-				<li>List Current Mixes</li />
-			</ul />
-		This isn't pretty yet and it won't be until the functionality is complete so deal with it.
-		</div />
+		<h2>Welcome to the Mix Widget Backend</h2>
+		Currently this interface is not very pretty and the only working functionality is making a mix by uploading a .zip file. 
+		Please see the included TODO for information on the planned feature set.<br />
+		The menu options perform the following actions:
+		<ul>
+			<li>Main - Takes you to this page.</li>
+			<li>Make A Mix - Takes you to the interface for making a mix.</li>
+			<li>Validate - Checks to see if all of the required files and directories exist and have the proper permissions.</li>
+		</ul>
 _END;
+	if (!glob("$mwbe_server_path" . "$mwbe_conf_dir" . "*.xml")) {
+		echo "You currrently have no mixes!<br />\n";
+	} else {
+		echo "<h2>You currently have the following mixes:</h2>\n";
+		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />\n<ul>\n";
+		foreach (glob("$mwbe_server_path" . "$mwbe_conf_dir" . "*.xml") as $xml) {
+			$mix_name = basename($xml, ".xml");
+			$conf_xml = simplexml_load_file("$xml");
+			$mix_title =  $conf_xml->title;
+			// Once mix editing works: Add in a link to the html file and css to make and edit link that is visibly different.
+			// echo "<a href=\"mwbe.php?action=editmix&mix=$mix_name\">$mix_title</a><br />\n";
+			echo "<li><a href=\"/mixes/$mix_name.html\">$mix_title</a><br /></li>\n";
+		}
+		echo "</ul>\n";
+	}
 }
 
+function editmix() {
+	echo <<<_END
+			<ul id="tabmenu">
+			<li><a class="active" href="mwbe.php?action=def">Main</a></li>
+			<li><a href="mwbe.php?action=makemix">Make A Mix</a></li>
+			<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
+		</ul>
+		</div>
+		<div id="content">
+_END;
+	global $action, $mix, $mwbe_server_path, $mwbe_playlist_dir, $mwbe_conf_dir;
+	$conf_xml = simplexml_load_file($mwbe_server_path . $mwbe_conf_dir . $mix . ".xml");
+	$mix_title =  $conf_xml->title;
+
+	echo "<h2>$mix_title</h2>\n";
+
+	$xspf_xml = simplexml_load_file($mwbe_server_path . $mwbe_playlist_dir . $mix . ".xspf");
+	echo "<h2>Full SimpleXML parsed playlist</h2><br />\n<pre>";
+	print_r($xspf_xml);
+	echo "</pre>";
+	echo "<h2>Testing Crap under here</h2>\n";
+	foreach($xspf_xml->trackList->track as $test_track => $list_track) {
+		echo $list_track->title . "<br/>\n";
+
+	}
+}
 
 function makemix() {
 	global $mwbe_site_url, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir;
@@ -46,11 +91,11 @@ function makemix() {
 	<ul id="tabmenu">
 		<li><a href="mwbe.php?action=def">Main</a>
 		<li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
-		
-		
+		<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
 	</ul>
 	<div id="content">
-	<h1>This will be where you can edit your existing mixes or create new mixes based on files you uploaded.</h1 />
+	<h2>Make a Mix - Choices, choices, choices...</h2>
+	Simply fill in the following information and click submit!
 _END;
 
 	echo "<form action=\"mwbe.php?action=upfiles\" method=\"post\">\n
@@ -83,23 +128,22 @@ Please select a skin for your mix tape:<br />\n";
 
 
 function upfiles() {
-	global $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $mwbe_tracks_dir;
+	global $mwbe_site_url, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $mwbe_tracks_dir;
 
 	echo <<<_END
 	<ul id="tabmenu">
 		<li><a href="mwbe.php?action=def">Main</a>
 		<li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
+		<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
 	</ul>
 	<div id="content">
-		The title for your mix will be: $mw_mix_title<br />\n
-		The Artist for your mix is: $mw_mix_artist<br />\n
-		Your tracks will be stored in $mwbe_tracks_dir/$mw_mix_title_short<br />\n
-		Your playlist will be $mwbe_playlist_dir/$mw_mix_title_short.xspf<br />\n
-		Your configuration file will be $mwbe_conf_dir/$mw_mix_title_short.xml<br />\n
-		You selected skin image $mw_skin_img<br />\n
-		Your artist text will be: x $mw_skin_ax y $mw_skin_ay<br />\n
-		Your track text will be: x $mw_skin_tx y $mw_skin_ty<br />\n
-		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2 />
+		<h2>Make a Mix - Upload a .zip file...</h2>
+		Your choices so far:
+		The title for your mix will be: $mw_mix_title<br />
+		The artist for your mix is: $mw_mix_artist<br />
+		Your selected skin image:<br />
+		<img height="240" width="320" src= "$mwbe_site_url/$mwbe_skins_dir/$mw_skin_img"><br />
+		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
 		<div class="directions">
 			Some quick tips on formatting your MP3 file names:<br />
 			(These tips are due to limitations in MixWidget Frontend that I hope to fix in future releases.)
@@ -118,7 +162,7 @@ function upfiles() {
 		The .zip file must meet the following specifications or it will be removed to prevent any malicious uploads:
 		<text class="warn">
 		<ul>
-			<li>Contain ONLY MP3 files with a single optional cover image named cover.jpg</li>
+			<li>Contain ONLY MP3 files.</li>
 			<li>Contain no path information. MixWidget Frontend doesn't parse any farther than the root of the zip file.</li>
 			<li>Contain no password information.</li>
 			<li>Not be a multi-part zip.</li>
@@ -129,10 +173,8 @@ function upfiles() {
 		<ul>
 			<li>All MP3s must be verifiable as MP3 files.</li>
 			<li>All MP3s must contain valid ID3v2 tags.</li>
-			<li>cover.jpg must be verifiable as a .jpg.</li>
 		</ul>
 		</text>
-		<text class="bad">If any SINGLE file fails the check above the whole archive will be removed and you will have to start over making your mix. Granular verification will be in a future version of this script but v0.1 verifies the archive as a whole and the files a whole directory. Sorry if this is inconvenient.</text>
 	</div>
 	<form enctype="multipart/form-data" action="mwbe.php?action=verify" method="POST">
 	<input type="hidden" name="mix_title" value="$mw_mix_title" />
@@ -147,17 +189,31 @@ _END;
 
 
 function verify() {
+	
+	global $mwbe_mixes_index, $mwbe_rel_path, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $up_name, $mw_mix_tracks_dir, $mw_mix_archive, $mw_mix_playlist, $mwbe_web_dir, $mwbe_base_url, $mwbe_site_url;
+		
+	function tryagain()	{
+		echo "Please click the \"Back\" button and try again!\n";
+		exit(0);
+	}
+	
+	function del_zip() {
+		global $up_name;
+		fclose($up_name);
+		unlink($up_name);
+		exit(0);
+	}
 	echo <<<_END
 	<ul id="tabmenu">
                 <li><a href="mwbe.php?action=def">Main</a>
                 <li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
+                <li><a href="mwbe.php?action=validate">Validate Installation</a></li>
         </ul>
 	<div id="content">
-	<div align="center"<h2>Verifying your upload</h2></div>
+	<div align="center"<h2>Make a Mix - Processing Upload...</h2></div>
 _END;
 
-	global $mwbe_rel_path, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $up_name, $mw_mix_tracks_dir, $mw_mix_archive, $mw_mix_playlist, $mwbe_web_dir, $mwbe_base_url, $mwbe_site_url;
-
+	
 	$zip_ext_whitelist = array('zip');
 	$mp3_ext_whitelist = array('mp3');
 	$img_whitelist = array('jpg');
@@ -171,6 +227,8 @@ _END;
 	$up_lc = strtolower($_FILES['zipfile']['name']);
 	$ver_tracks_dir = $mwbe_server_path . $mw_mix_tracks_dir;
 	$up_archive = $mwbe_server_path . $mw_mix_archive;
+	$up_name_only = basename($up_name);
+	$up_archive_name_only = basename($up_archive);
 
 
 	if (!move_uploaded_file($_FILES['zipfile']['tmp_name'], $up_name)) {
@@ -183,57 +241,53 @@ _END;
 		echo "$f_name is not a .zip file and has been removed.<br />";
 		del_zip();
 	} else {
-		// zip file extraction
 		$zip = new ZipArchive;
 		if ($zip->open("$up_name") === TRUE) {
 			mkdir("$ver_tracks_dir", 0775);
 			$zip->extractTo($ver_tracks_dir);
 			$zip->close();
-			echo "Tracks for $mw_mix_title extracted from $up_name to $ver_tracks_dir successfully.<br />\n";
+			echo "Tracks for $mw_mix_title extracted from $up_name_only successfully!<br />\n";
 			if (rename("$up_name", "$up_archive")) {
-				echo "Uploaded file $up_name has been renamed to $up_archive<br />\n";
+				echo "Uploaded file: $up_name_only has been renamed to $up_archive_name_only to allow downloading of the track archive...<br /><br />\n";
 			} else {
-				echo "There was a problem re-naming $up_name to $up_archive. No track archive will be available for download.<br />\n";
+				echo "There was a problem re-naming $up_name_only to $up_archive_name_only. No track archive will be available for download.<br />\n";
 			}
 		} else {
-			echo "There was a problem extracting the files from $up_name and it has been removed for security reasons.<br />\n";
+			echo "There was a problem extracting the files from $up_name_only and it has been removed for security reasons.<br />\n";
 			del_zip();
 		}
 	}
 
-	echo "Finished processing zip file<br />\n"; // debug message - remove later
-
-	// Play list creation and MP3 file verification
-	// Set and write header for playlist
 	$pl_playlist = $mwbe_server_path . $mw_mix_playlist;
-	echo $pl_playlist;
 	$pl_head = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
 	<!-- generator=\"MixWidget Back End\" -->
 	<playlist version=\"1\" xmlns=\"http://xspf.org/ns/0/\">
-	\t<trackList>";
+	\t<trackList>\n";
 	$f_pl_head = fopen("$pl_playlist", "w");
 	fwrite($f_pl_head, $pl_head);
 	fclose($f_pl_head);
-	// Set tracklist for playlist
+	echo "<h3>Processing MP3s now...</h3>\n<div class=\"process\">";
 	foreach (glob("$ver_tracks_dir*.mp3") as $pre_song) {
-		echo "<div id=\"checks\"><p>Processing $pre_song<br />\n";
+		$pre_song_name_only = basename($pre_song);
+		echo "<text class=\"pr_head\">Processing $pre_song_name_only...<br /></text>\n";
 		$post_song = basename($pre_song, ".mp3");
 		$post_song = str_replace("/[^a-zA-Z0-9s]/", "", $post_song); // remove any non alpha-numeric characters
 		$post_song = str_replace(" ", "", $post_song); //remove any spaces
 		$post_song = strtolower($post_song); // make it lower case to avoid issues on case sensitive systems
 		$post_song = $mwbe_server_path . $mw_mix_tracks_dir . $post_song . ".mp3";
+		$post_song_name_only = basename($post_song);
 		if (!rename("$pre_song", "$post_song")) {
-			echo "failed to rename $pre_song to $post_song<br />\n";
+			echo "failed to rename $pre_song_name_only to $post_song_name_only<br />\n";
 		} else {
 			if (!in_array(end(explode('.', $post_song)), $mp3_ext_whitelist)) {
-				echo "$post_song is not an MP3 and has been removed for security reasons.<br />\n";
+				echo "$post_song_name_only is not an MP3 and has been removed for security reasons.<br />\n";
 				fclose($post_song);
 				unlink($post_song);
 			} else {
-				echo "Attempting to process ID3 fields for $post_song...<br />\n";
+				echo "...attempting to process ID3 fields for $post_song_name_only<br />\n";
 				$getid3 = new getID3;
 				$getid3->analyze("$post_song");
-				echo "$post_song is a valid MP3 and is being added to your playlist<br />\n";
+				echo "...$post_song_name_only is a valid MP3 and is being added to your playlist<br />\n";
 				if (@$getid3->info['tags']) {
 					foreach ($getid3->info['tags'] as $tag => $tag_info) {
 						if (@$getid3->info['tags'][$tag]['title']) {
@@ -251,13 +305,8 @@ _END;
 					$pl_mp3 = basename($post_song);
 				}
 			}
-			//$pl_artist = urlencode($pl_artist);
-			//$pl_title = urlencode($pl_title);
-			echo $pl_mp3 . "<br />\n";
-			echo htmlentities($pl_mp3, ENT_QUOTES) . "<br />\n";
-			
+			echo "<text class=\"pr_foot\">...$pl_title by $pl_artist has been added to your playlist!</text><br /><br />\n";
 			$pl_full_path = $mwbe_site_url . $mwbe_tracks_dir . $mw_mix_title_short . "/" . htmlentities($pl_mp3, ENT_QUOTES);
-			echo "$pl_full_path being added to playlist now.<br />\n";
 			$tr_text = "\t\t<track>
 			\t\t\t<location>$pl_full_path</location>
 			\t\t\t<creator>$pl_artist</creator>
@@ -268,46 +317,32 @@ _END;
 			$f_pl_tr = fopen("$pl_playlist", "a");
 			fwrite($f_pl_tr, $tr_text);
 			fclose($f_pl_tr);
-			echo "</p></div>\n";
 		}
 	}
+	echo "</div>";
 
-	$pl_foot = "\t</trackList>\n</playlist>";
+	$pl_foot = "\t</trackList>
+	</playlist>";
 	$f_pl_foot = fopen("$pl_playlist", "a");
 	fwrite($f_pl_foot, $pl_foot);
 	fclose($f_pl_foot);
-	echo "Your playlist has been created.<br />\nCreating the MixWidget configuration file now.<br />\n";
-
-	// call functions to create: conf file, and html file
+	echo "<text class=\"pr_foot\">Your playlist has been created...</text><br />\n<text class=\"pr_foot\">Creating the MixWidget configuration file now...</text><br />\n";
 	makeconf();
-	echo "Configuration file complete making html file now<br />\n";
+	echo "<text class=\"pr_foot\">Configuration file complete making html file now...</text><br />\n";
 	makehtml();
-
-	function del_zip() {
-		global $up_name;
-		fclose($up_name);
-		unlink($up_name);
-	}
-
-	function tryagain()	{
-		global $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir;
-		echo "Please click the button and try again. If you press back you will have to start all over!\n<br />
-	<form action=\"mwbe.php?action=upfiles\" method=\"post\">\n
-        <input type=\"hidden\" name=\"mix_title\" value=\"$mw_mix_title\" />\n
-        <input type=\"hidden\" name=\"mix_artist\" value=\"$mw_mix_artist\" />\n
-        <input type=\"hidden\" name=\"skin_img\" value=\"$mw_skin_img\" />\n
-        <input type=\"submit\" value=\"Try Again!\" />\n
-        </form>\n";
-		exit(0);
-	}
-
+	echo "<text class=\"pr_foot\">Your mix has been successfully created!</text><br /><br />
+	You may:
+	<ul>
+	<li><a href=\"" . $mwbe_site_url . $mwbe_html_dir .  $mw_mix_title_short . ".html\">View the .html file</a></li>
+	<li><a href=\"mwbe.php\">Return to the Mix Widget Backend \"Main\" page.</li>
+	<li><a href=\"" . $mwbe_site_url . $mwbe_mixes_index . "\">View your Mix Widget Backend site index</a></li>
+	</ul>";
 }
 
 
 function makeconf() {
 	global $mwbe_server_path, $mwbe_conf_dir, $mw_mix_conf, $mw_mix_artist, $mw_mix_title, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay;
-	// The conf file is all here because this is easier right now...
-	// Lots of functionality that's not included in ver 0.1
+
 	$conf_whole = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 	<widget version=\"2.1\" flashVersion=\"9.0.0\">
 	\t<title>$mw_mix_title</title> <!-- shown at opening -->
@@ -339,17 +374,13 @@ function makeconf() {
 
 
 function makehtml() {
-	global $mwbe_conf_dir, $mwbe_server_path, $mwbe_site_url, $mwbe_up_dir, $mw_mix_title_short, $mw_mix_allow_archive, $mw_mix_allow_embed, $mw_main_swf, $mw_mix_conf, $mw_mix_playlist, $mwbe_skins_dir, $mw_skin_img, $mw_mix_html;
-	// This function creates an html file with embed code - if allowed and the track archive link - if allowed
-	// and appends an index file that shows all mixes
-	// Once again this is easier for this version to have the whole file here.
-	// Having problems with variable combining in echo statements. Vars here
+	global $mwbe_mixes, $mwbe_conf_dir, $mwbe_server_path, $mwbe_miex, $mwbe_site_url, $mwbe_up_dir, $mw_mix_title_short, $mw_mix_allow_archive, $mw_mix_allow_embed, $mw_main_swf, $mw_mix_conf, $mw_mix_playlist, $mwbe_skins_dir, $mw_skin_img, $mw_mix_html;
 	$flash_src = $mwbe_site_url . $mw_main_swf;
 	$flash_var_config = $mwbe_site_url . $mwbe_conf_dir . $mw_mix_title_short . ".xml";
 	$flash_var_pl = $mwbe_site_url . $mw_mix_playlist;
 	$flash_var_skin = $mwbe_site_url . $mwbe_skins_dir . $mw_skin_img;
 	if ($mw_mix_allow_archive == "0") {
-		$html_archive = "<a href=\"$mwbe_site_url . $mwbe_up_dir . $mw_mix_title_short . '.zip'\">Track Archive</a>";
+		$html_archive = "<a href=\"" . $mwbe_site_url . $mwbe_up_dir . $mw_mix_title_short . '.zip' . "\">Track Archive</a>";
 	} else {
 		$$html_archive = "This mix does not have an archive to download";
 	}
@@ -360,7 +391,7 @@ function makehtml() {
 	}
 	$mwbe_html_page = "<html>
 	<head>\t
-	<link type=\"text/css\" rel=\"stylesheet\" href=\"style.css\">\t
+	<link type=\"text/css\" rel=\"stylesheet\" href=\"includes/style.css\">\t
 	<title>The MixWidget Frontend</title>
 	<head>
 	<body>\t
@@ -377,32 +408,31 @@ function makehtml() {
 	$f_html = fopen("$ver_html", "w");
 	fwrite($f_html, $mwbe_html_page);
 	fclose($f_html);
-	$mwbe_mix_link = $mwbe_site_url . $mw_mix_title_short . ".html";
-	$mwbe_mix_list = "echo \"<a href=\\\"$mwbe_mix_link\\\">$mwbe_Mix_Title</a><br />\n";
-	$f_includes = fopen("$mwbe_mixes_list", "a");
-	fwrite($f_includes, $mwbe_mix_list);
-	fclose($f_includes);
+
+	$index_mix_embed = "\t<div id=\"tape\">
+	\t\t<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>
+	\t</div>";
+	$ver_index = $mwbe_server_path . $mwbe_mixes;
+	$f_mixes = fopen("$ver_index", "a");
+	fwrite($f_mixes, $index_mix_embed);
+	fclose($f_mixes);
 }
 
 
 function validate() {
 	echo "<ul id=\"tabmenu\">\n
-			<li><a class=\"active\" href=\"mwbe.php?action=validate\">Validate</a>\n
-			<li><a href=\"mwbe.php?action=def\">Main</a>\n
-			<li><a href=\"mwbe.php?action=makemix\">Make A Mix</a>\n
+			<li><a href=\"mwbe.php?action=def\">Main</a></li>
+			<li><a href=\"mwbe.php?action=makemix\">Make A Mix</a></li>
+			<li><a class=\"active\" href=\"mwbe.php?action=validate\">Validate Installation</a></li>
 		</ul>\n
 		<div id=\"content\">\n
 		<div align=\"center\"><h2>Directory and File Validation</h2></div />\n
 		To re-check simply <a href=\"mwbe.php?action=validate\">click here</a> or on the Validate menu option above.<br />\n
 		Once everything in both of the lists below is green then <a href=\"mwbe.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
-	global $mwbe_server_path, $action, $mwbe_dir, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_dir, $mw_resources, $mwbe_conf_skel, $mwbe_html_skel, $mwbe_mixes_index, $mwbe_cover_img, $mw_main_swf, $mw_main_ds, $mw_resources_swf, $mw_resources_js, $mw_resources_ds, $mwbe_tracks_dir, $mwbe_up_dir;
+	global $mwbe_mixes, $mwbe_server_path, $action, $mwbe_dir, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_dir, $mw_resources, $mwbe_conf_skel, $mwbe_html_skel, $mwbe_mixes_index, $mwbe_cover_img, $mw_main_swf, $mw_main_ds, $mw_resources_swf, $mw_resources_js, $mw_resources_ds, $mwbe_tracks_dir, $mwbe_up_dir;
 
-	// Some files and dirs need to be writable and some only readable we use two arrays so we don't duplicate work
-
-	$wdir_arr = array($mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_mixes_index, $mwbe_tracks_dir, $mwbe_up_dir);
+	$wdir_arr = array($mwbe_mixes, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_mixes_index, $mwbe_tracks_dir, $mwbe_up_dir);
 	$rdir_arr = array($mw_dir, $mw_resources, $mwbe_skins_dir, $mw_main_swf, $mw_main_ds, $mw_resources_swf, $mw_resources_js, $mw_resources_ds);
-
-	// Exists and Writable Check
 
 	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2 />\n";
 	foreach ($wdir_arr as &$wvalue) {

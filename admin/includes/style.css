@@ -8,7 +8,8 @@ body {
 	padding: 0;
 }
 
-pre {font 1em/1.7em monospace;
+pre {
+	font 1em/1.7em monospace;
 	
 }
 
@@ -96,6 +97,10 @@ body>#tabmenu {
 	z-index: 0;
 }
 
+#content h2 {
+	text-align: center;
+}
+
 div.good {
 	color: #008000;
 	font-weight: bold;
@@ -121,11 +126,28 @@ div.checks {
 	line-height: 2em;
 }
 
-div.tape {
-	float: center;
+text.pr_head {
+	font-size: 1.5em;
+	color: blue;	
 }
 
-div.embed {
+text.pr_foot {
+	font-size: 1.5em;
+	color: green;	
+}
+
+div.process {
+	font-family: Monospace;
+	font-size: .75em;
+	border: 1px solid #000000;
+	height: 300;
+	overflow: auto;	
+}
+
+#tape {
+	float: center;
+}
+#embed {
 	float: center;
 	border: 1px solid black; 
 	width: 400px; 

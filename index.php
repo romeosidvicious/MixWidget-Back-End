@@ -1,11 +1,16 @@
 <?php
-echo "<head>\t
-<title>Your Mixes</title>
+echo "<html>
 <head>
-<body>\t
+\t<link type=\"text/css\" rel=\"stylesheet\" href=\"includes/style.css\">
+\t<title>Your Mixes</title>
+<head>
+<body>
+\t<div>
+\t\t<h2>The Mix Widget Backend</h2>\n
+\t\t<h3>For your listening pleasure:</h3>
 ";
 
-include "mixes.include";
+include "mixes.php";
 
 echo "</body>
 </html>";

@@ -2,13 +2,15 @@
 
 // User Defined Vars
 // Direcotries must include trailing slash
-$mwbe_dir = "MWFE/"; // if you have installed MWBE in the root of a webserver leave blank
+$mwbe_dir = ""; // if you have installed MWBE in the root of a webserver leave blank
 $mwbe_server_path = $_SERVER["DOCUMENT_ROOT"] . "/" . $mwbe_dir;
 $mwbe_rel_path = "../"; //path relative to your base mixwidget back end relative to the admin directory
 //You shouldn't need to change anything under this
 
-// Menu Functionality
+//URL Functionality
 $action = $_GET["action"];
+$mix = $_GET["mix"];
+
 
 //Files & Directories
 
@@ -21,7 +23,7 @@ $mwbe_skins_dir = "skins/";
 $mwbe_tracks_dir = "tracks/";
 $mwbe_up_dir = "archives/";
 $mwbe_mixes_index = "index.php";
-$mwbe_mixes_list = "mixes.include";
+$mwbe_mixes = "mixes.php";
 $mwbe_cover_img = 'cover.jpg';
 $mwbe_base_url = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
 $mwbe_site_url = "http://" . $_SERVER["HTTP_HOST"] . "/" . $mwbe_dir;
