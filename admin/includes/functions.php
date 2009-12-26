@@ -1,35 +1,47 @@
 <?php
 
-function menu() {
-	global $action;
-	if ($action =="def") {
-		def();
-	} elseif ($action == "makemix") {
+function nav() {
+	unset($_SESSION['index_class']);
+	unset($_SESSION['editmix_class']);
+	unset($_SESSION['validate_class']);
+	unset($_SESSION['makemix_class']);
+	unset($_SESSION['mwbedocs_class']);
+	unset($_SESSION['upfiles_class']);
+	if ($_SESSION['action'] == "index") {
+		index();
+	} elseif ($_SESSION['action'] == "makemix") {
 		makemix();
-	} elseif ($action == "upfiles") {
+	} elseif ($_SESSION['action'] == "upfiles") {
 		upfiles();
-	} elseif ($action == "verify") {
+	} elseif ($_SESSION['action'] == "verify") {
 		verify();
-	} elseif ($action == "validate") {
+	} elseif ($_SESSION['action'] == "validate") {
 		validate();
-	} elseif ($action == "editmix") {
+	} elseif ($_SESSION['action'] == "editmix") {
 		editmix();
+	} elseif ($_SESSION['action'] == "mwbedocs") {
+		mwbedocs();
 	} else {
-		def();
+		index();
 	}
 }
 
-
-function def() {
-	global $mwbe_dir, $mwbe_server_path, $mwbe_conf_dir;
-	echo <<<_END
-			<ul id="tabmenu">
-			<li><a class="active" href="mwbe.php?action=def">Main</a></li>
-			<li><a href="mwbe.php?action=makemix">Make A Mix</a></li>
-			<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
+function menu() {
+	echo "<ul id=\"tabmenu\">
+			<li><a" . $_SESSION['index_class'] . "href=\"index.php?action=def\">Main</a></li>
+			<li><a" . $_SESSION['makemix_class'] . "href=\"index.php?action=makemix\">Make A Mix</a></li>
+			<li><a" . $_SESSION['editmix_class'] . "href=\"index.php?action=makemix\">Edit Your MixesMix</a></li>
+			<li><a" . $_SESSION['mwbedocs_class'] . "href=\"index.php?action=mwbedocs\">Documentation</a></li>
+			<li><a" . $_SESSION['validate_class'] . "href=\"index.php?action=validate\">Validate Installation</a></li>
 		</ul>
-		</div>
-		<div id="content">
+		</div>";
+
+}
+
+function index() {
+	$_SESSION['index_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">
 		<h2>Welcome to the Mix Widget Backend</h2>
 		Currently this interface is not very pretty and the only working functionality is making a mix by uploading a .zip file. 
 		Please see the included TODO for information on the planned feature set.<br />
@@ -38,42 +50,36 @@ function def() {
 			<li>Main - Takes you to this page.</li>
 			<li>Make A Mix - Takes you to the interface for making a mix.</li>
 			<li>Validate - Checks to see if all of the required files and directories exist and have the proper permissions.</li>
-		</ul>
-_END;
-	if (!glob("$mwbe_server_path" . "$mwbe_conf_dir" . "*.xml")) {
+		</ul>";
+
+	if (!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
 		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />\n<ul>\n";
-		foreach (glob("$mwbe_server_path" . "$mwbe_conf_dir" . "*.xml") as $xml) {
-			$mix_name = basename($xml, ".xml");
+		foreach (glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
+			$_SESSION['mix_name'] = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
-			$mix_title =  $conf_xml->title;
+			$_SESSION['mix_title'] =  $conf_xml->title;
 			// Once mix editing works: Add in a link to the html file and css to make and edit link that is visibly different.
-			// echo "<a href=\"mwbe.php?action=editmix&mix=$mix_name\">$mix_title</a><br />\n";
-			echo "<li><a href=\"/mixes/$mix_name.html\">$mix_title</a><br /></li>\n";
+			// echo "<a href=\"index.php?action=editmix&mix=$_SESSION['mix_name']\">$_SESSION['mix_title']</a><br />\n";
+			echo "<li><a href=\"/mixes/" . $_SESSION['mix_name'] . ".html\">" . $_SESSION['mix_title'] . "</a><br /></li>\n";
 		}
 		echo "</ul>\n";
 	}
 }
 
 function editmix() {
-	echo <<<_END
-			<ul id="tabmenu">
-			<li><a class="active" href="mwbe.php?action=def">Main</a></li>
-			<li><a href="mwbe.php?action=makemix">Make A Mix</a></li>
-			<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
-		</ul>
-		</div>
-		<div id="content">
-_END;
-	global $action, $mix, $mwbe_server_path, $mwbe_playlist_dir, $mwbe_conf_dir;
-	$conf_xml = simplexml_load_file($mwbe_server_path . $mwbe_conf_dir . $mix . ".xml");
-	$mix_title =  $conf_xml->title;
+	$_SESSION['editmix_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">:";
 
-	echo "<h2>$mix_title</h2>\n";
+	$conf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mix'] . ".xml");
+	$_SESSION['mix_title'] =  $conf_xml->title;
 
-	$xspf_xml = simplexml_load_file($mwbe_server_path . $mwbe_playlist_dir . $mix . ".xspf");
+	echo "<h2>" . $_SESSION['mix_title'] . "</h2>\n";
+
+	$xspf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_playlist_dir'] . $_SESSION['mix'] . ".xspf");
 	echo "<h2>Full SimpleXML parsed playlist</h2><br />\n<pre>";
 	print_r($xspf_xml);
 	echo "</pre>";
@@ -85,34 +91,27 @@ _END;
 }
 
 function makemix() {
-	global $mwbe_site_url, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir;
-
-	echo <<<_END
-	<ul id="tabmenu">
-		<li><a href="mwbe.php?action=def">Main</a>
-		<li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
-		<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
-	</ul>
-	<div id="content">
+	$_SESSION['makemix_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">
 	<h2>Make a Mix - Choices, choices, choices...</h2>
 	Simply fill in the following information and click submit!
-_END;
 
-	echo "<form action=\"mwbe.php?action=upfiles\" method=\"post\">\n
+	<form action=\"index.php?action=upfiles\" method=\"post\">\n
 Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" />\n
 <br />\n
 Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" />\n
 <br />\n
-Please select a skin for your mix tape:<br />\n";
-	echo "<table border=\"0\" cellpadding=\"1\" />";
+Please select a skin for your mix tape:<br />
+<table border=\"0\" cellpadding=\"1\" />";
 
 	$skin_count = 1;
-	foreach (glob("$mwbe_server_path/$mwbe_skins_dir/*.jpg") as $skin) {
-		$skin_img = str_replace("$mwbe_server_path/$mwbe_skins_dir/", '',$skin);
+	foreach (glob($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/*.jpg") as $skin) {
+		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/", '',$skin);
 		if ($skin_count == 1){
 			echo "<tr align=\"center\" valign=\"middle\">";
 		}
-		echo "<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"$mwbe_site_url/skins/$skin_img\"><br />\n$skin_img\n</td />\n";
+		echo "<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />\n$skin_img\n</td />\n";
 		$skin_count++;
 		if ($skin_count == 7) {
 			echo "</tr />";
@@ -126,28 +125,21 @@ Please select a skin for your mix tape:<br />\n";
 <br /><br />";
 }
 
-
 function upfiles() {
-	global $mwbe_site_url, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $mwbe_tracks_dir;
-
-	echo <<<_END
-	<ul id="tabmenu">
-		<li><a href="mwbe.php?action=def">Main</a>
-		<li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
-		<li><a href="mwbe.php?action=validate">Validate Installation</a></li>
-	</ul>
-	<div id="content">
+	$_SESSION['makemix_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">
 		<h2>Make a Mix - Upload a .zip file...</h2>
 		Your choices so far:
-		The title for your mix will be: $mw_mix_title<br />
-		The artist for your mix is: $mw_mix_artist<br />
+		The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
+		The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
 		Your selected skin image:<br />
-		<img height="240" width="320" src= "$mwbe_site_url/$mwbe_skins_dir/$mw_skin_img"><br />
+		<img height=\"240\" width=\"320\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "><br />
 		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
-		<div class="directions">
+		<div class=\"directions\">
 			Some quick tips on formatting your MP3 file names:<br />
 			(These tips are due to limitations in MixWidget Frontend that I hope to fix in future releases.)
-		<text class="good">
+		<text class=\"good\">
 		<ul>
 			<li>Your files will be added to the playlist in alphabetical order so please name them with that in mind.</li>
 			<ul>
@@ -160,7 +152,7 @@ function upfiles() {
 		</ul>
 		</text>
 		The .zip file must meet the following specifications or it will be removed to prevent any malicious uploads:
-		<text class="warn">
+		<text class=\"warn\">
 		<ul>
 			<li>Contain ONLY MP3 files.</li>
 			<li>Contain no path information. MixWidget Frontend doesn't parse any farther than the root of the zip file.</li>
@@ -169,51 +161,26 @@ function upfiles() {
 		</ul>
 		</text>
 		All of the files contained in the .zip file must meet the following specifications:
-		<text class="warn">
+		<text class=\"warn\">
 		<ul>
 			<li>All MP3s must be verifiable as MP3 files.</li>
 			<li>All MP3s must contain valid ID3v2 tags.</li>
 		</ul>
 		</text>
 	</div>
-	<form enctype="multipart/form-data" action="mwbe.php?action=verify" method="POST">
-	<input type="hidden" name="mix_title" value="$mw_mix_title" />
-	<input type="hidden" name="mix_artist" value="$mw_mix_artist" />
-	<input type="hidden" name="skin_img" value="$mw_skin_img" />
-	<input type="hidden" name="MAX_FILE_SIZE" value="200000000" />
-	Choose a zip file to upload: <input name="zipfile" type="file" /><input type="submit" value="Upload Zip File" />
+	<form enctype=\"multipart/form-data\" action=\"index.php?action=verify\" method=\"POST\">
+	<input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"200000000\" />
+	Choose a zip file to upload: <input name=\"zipfile\" type=\"file\" /><input type=\"submit\" value=\"Upload Zip File\" />
 	</form>
-	</div>	
-_END;
+	</div>";
 }
 
-
 function verify() {
-	
-	global $mwbe_mixes_index, $mwbe_rel_path, $mwbe_server_path, $mw_mix_title, $mw_mix_artist, $mw_mix_title_short, $mwbe_tracks_dir, $mwbe_playlist_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay, $mwbe_conf_skel, $html_skel, $mixes_index, $mwbe_cover_img, $mwbe_conf_dir, $mwbe_up_dir, $up_name, $mw_mix_tracks_dir, $mw_mix_archive, $mw_mix_playlist, $mwbe_web_dir, $mwbe_base_url, $mwbe_site_url;
-		
-	function tryagain()	{
-		echo "Please click the \"Back\" button and try again!\n";
-		exit(0);
-	}
-	
-	function del_zip() {
-		global $up_name;
-		fclose($up_name);
-		unlink($up_name);
-		exit(0);
-	}
-	echo <<<_END
-	<ul id="tabmenu">
-                <li><a href="mwbe.php?action=def">Main</a>
-                <li><a class="active" href="mwbe.php?action=makemix">Make A Mix</a>
-                <li><a href="mwbe.php?action=validate">Validate Installation</a></li>
-        </ul>
-	<div id="content">
-	<div align="center"<h2>Make a Mix - Processing Upload...</h2></div>
-_END;
+	$_SESSION['makemix_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">
+	<div align=\"center\"<h2>Make a Mix - Processing Upload...</h2></div>";
 
-	
 	$zip_ext_whitelist = array('zip');
 	$mp3_ext_whitelist = array('mp3');
 	$img_whitelist = array('jpg');
@@ -223,10 +190,10 @@ _END;
 	$blacklist = array('php', 'php3', 'php4', 'phtml','exe');
 	$f_name = ( $_FILES['zipfile']['name']);
 	global $up_name;
-	$up_name = $mwbe_rel_path . $mwbe_up_dir . basename( $_FILES['zipfile']['name']);
+	$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename( $_FILES['zipfile']['name']);
 	$up_lc = strtolower($_FILES['zipfile']['name']);
-	$ver_tracks_dir = $mwbe_server_path . $mw_mix_tracks_dir;
-	$up_archive = $mwbe_server_path . $mw_mix_archive;
+	$ver_tracks_dir = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'];
+	$up_archive = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_archive'];
 	$up_name_only = basename($up_name);
 	$up_archive_name_only = basename($up_archive);
 
@@ -246,7 +213,7 @@ _END;
 			mkdir("$ver_tracks_dir", 0775);
 			$zip->extractTo($ver_tracks_dir);
 			$zip->close();
-			echo "Tracks for $mw_mix_title extracted from $up_name_only successfully!<br />\n";
+			echo "Tracks for " . $_SESSION['mw_mix_title'] . "extracted from $up_name_only successfully!<br />\n";
 			if (rename("$up_name", "$up_archive")) {
 				echo "Uploaded file: $up_name_only has been renamed to $up_archive_name_only to allow downloading of the track archive...<br /><br />\n";
 			} else {
@@ -258,7 +225,7 @@ _END;
 		}
 	}
 
-	$pl_playlist = $mwbe_server_path . $mw_mix_playlist;
+	$pl_playlist = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_playlist'];
 	$pl_head = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>
 	<!-- generator=\"MixWidget Back End\" -->
 	<playlist version=\"1\" xmlns=\"http://xspf.org/ns/0/\">
@@ -274,7 +241,7 @@ _END;
 		$post_song = str_replace("/[^a-zA-Z0-9s]/", "", $post_song); // remove any non alpha-numeric characters
 		$post_song = str_replace(" ", "", $post_song); //remove any spaces
 		$post_song = strtolower($post_song); // make it lower case to avoid issues on case sensitive systems
-		$post_song = $mwbe_server_path . $mw_mix_tracks_dir . $post_song . ".mp3";
+		$post_song = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'] . $post_song . ".mp3";
 		$post_song_name_only = basename($post_song);
 		if (!rename("$pre_song", "$post_song")) {
 			echo "failed to rename $pre_song_name_only to $post_song_name_only<br />\n";
@@ -306,11 +273,11 @@ _END;
 				}
 			}
 			echo "<text class=\"pr_foot\">...$pl_title by $pl_artist has been added to your playlist!</text><br /><br />\n";
-			$pl_full_path = $mwbe_site_url . $mwbe_tracks_dir . $mw_mix_title_short . "/" . htmlentities($pl_mp3, ENT_QUOTES);
+			$pl_full_path = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/" . htmlentities($pl_mp3, ENT_QUOTES);
 			$tr_text = "\t\t<track>
 			\t\t\t<location>$pl_full_path</location>
 			\t\t\t<creator>$pl_artist</creator>
-			\t\t\t<album>$mw_mix_title</album>
+			\t\t\t<album>" . $_SESSION['mw_mix_title'] . "</album>
 			\t\t\t<title>$pl_title</title>
 			\t\t\t<duration>$pl_time</duration>
 			\t\t</track>\n";
@@ -333,20 +300,17 @@ _END;
 	echo "<text class=\"pr_foot\">Your mix has been successfully created!</text><br /><br />
 	You may:
 	<ul>
-	<li><a href=\"" . $mwbe_site_url . $mwbe_html_dir .  $mw_mix_title_short . ".html\">View the .html file</a></li>
-	<li><a href=\"mwbe.php\">Return to the Mix Widget Backend \"Main\" page.</li>
-	<li><a href=\"" . $mwbe_site_url . $mwbe_mixes_index . "\">View your Mix Widget Backend site index</a></li>
+	<li><a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_html_dir'] .  $_SESSION['mw_mix_title_short'] . ".html\">View the .html file</a></li>
+	<li><a href=\"index.php\">Return to the Mix Widget Backend \"Main\" page.</li>
+	<li><a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_mixes_index'] . "\">View your Mix Widget Backend site index</a></li>
 	</ul>";
 }
 
-
 function makeconf() {
-	global $mwbe_server_path, $mwbe_conf_dir, $mw_mix_conf, $mw_mix_artist, $mw_mix_title, $mw_skin_img, $mw_skin_tx, $mw_skin_ty, $mw_skin_ax, $mw_skin_ay;
-
 	$conf_whole = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 	<widget version=\"2.1\" flashVersion=\"9.0.0\">
-	\t<title>$mw_mix_title</title> <!-- shown at opening -->
-	\t<creator>$mw_mix_artist</creator><!-- shown at opening -->
+	\t<title>" . $_SESSION['mw_mix_title'] . "</title> <!-- shown at opening -->
+	\t<creator>" . $_SESSION['mw_mix_artist'] . "</creator><!-- shown at opening -->
 	\t<!-- <image rotation=\"0\" x=\"0\" scale=\"25\" y=\"0\" mask=\"full\"></image> -->
 	\t<!-- comment out image tag to remove image -->
 	\t<skin imageEnabled=\"true\">
@@ -361,30 +325,28 @@ function makeconf() {
     \t\t<threaderColor>CCCCCC</threaderColor><!-- hex color-->
     \t\t<text size=\"18\" color=\"000000\" bgAlpha=\"0\" bgColor=\"FFFFFF\" align=\"LEFT\"></text>
     \t\t<!-- bgAlpha = 0-100, align = LEFT, CENTER, RIGHT -->
-	\t\t<trackText x=\"$mw_skin_tx\" y=\"$mw_skin_ty\" width=\"260\"></trackText>
-    \t\t<artistText x=\"$mw_skin_ax\" y=\"$mw_skin_ay\" width=\"260\"></artistText>
+	\t\t<trackText x=\"" . $_SESSION['mw_skin_tx'] . "\" y=\"" . $_SESSION['mw_skin_ty'] . "\" width=\"260\"></trackText>
+    \t\t<artistText x=\"" . $_SESSION['mw_skin_ax'] . "\" y=\"" . $_SESSION['mw_skin_ay'] . "\" width=\"260\"></artistText>
     \t</skin>
     </widget>";
-	$ver_conf = $mwbe_server_path . $mw_mix_conf;
+	$ver_conf = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_conf'];
 	$f_conf = fopen("$ver_conf", "w");
 	fwrite($f_conf, $conf_whole);
 	fclose($f_conf);
 
 }
 
-
 function makehtml() {
-	global $mwbe_mixes, $mwbe_conf_dir, $mwbe_server_path, $mwbe_miex, $mwbe_site_url, $mwbe_up_dir, $mw_mix_title_short, $mw_mix_allow_archive, $mw_mix_allow_embed, $mw_main_swf, $mw_mix_conf, $mw_mix_playlist, $mwbe_skins_dir, $mw_skin_img, $mw_mix_html;
-	$flash_src = $mwbe_site_url . $mw_main_swf;
-	$flash_var_config = $mwbe_site_url . $mwbe_conf_dir . $mw_mix_title_short . ".xml";
-	$flash_var_pl = $mwbe_site_url . $mw_mix_playlist;
-	$flash_var_skin = $mwbe_site_url . $mwbe_skins_dir . $mw_skin_img;
-	if ($mw_mix_allow_archive == "0") {
-		$html_archive = "<a href=\"" . $mwbe_site_url . $mwbe_up_dir . $mw_mix_title_short . '.zip' . "\">Track Archive</a>";
+	$flash_src = $_SESSION['mwbe_site_url'] . $_SESSION['mw_main_swf'];
+	$flash_var_config = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
+	$flash_var_pl = $_SESSION['mwbe_site_url'] . $_SESSION['mw_mix_playlist'];
+	$flash_var_skin = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_skins_dir'] . $_SESSION['mw_skin_img'];
+	if ($_SESSION['mw_mix_allow_archive'] == "0") {
+		$html_archive = "<a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . '.zip' . "\">Track Archive</a>";
 	} else {
 		$$html_archive = "This mix does not have an archive to download";
 	}
-	if ($mw_mix_allow_embed == "0") {
+	if ($_SESSION['mw_mix_allow_embed'] == "0") {
 		$html_embed = "<code>&lt;embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"&gt;&lt;/embed&gt;</code>";
 	} else {
 		$html_embed = "This mix does not allow embeding";
@@ -404,7 +366,7 @@ function makehtml() {
 	<div id=\"embed\">$html_embed</div>
 	</body>
 	</html>";
-	$ver_html = $mwbe_server_path . $mw_mix_html;
+	$ver_html = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_html'];
 	$f_html = fopen("$ver_html", "w");
 	fwrite($f_html, $mwbe_html_page);
 	fclose($f_html);
@@ -412,38 +374,33 @@ function makehtml() {
 	$index_mix_embed = "\t<div id=\"tape\">
 	\t\t<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>
 	\t</div>";
-	$ver_index = $mwbe_server_path . $mwbe_mixes;
+	$ver_index = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_mixes'];
 	$f_mixes = fopen("$ver_index", "a");
 	fwrite($f_mixes, $index_mix_embed);
 	fclose($f_mixes);
 }
 
-
 function validate() {
-	echo "<ul id=\"tabmenu\">\n
-			<li><a href=\"mwbe.php?action=def\">Main</a></li>
-			<li><a href=\"mwbe.php?action=makemix\">Make A Mix</a></li>
-			<li><a class=\"active\" href=\"mwbe.php?action=validate\">Validate Installation</a></li>
-		</ul>\n
-		<div id=\"content\">\n
+	$_SESSION['validate_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">\n
 		<div align=\"center\"><h2>Directory and File Validation</h2></div />\n
-		To re-check simply <a href=\"mwbe.php?action=validate\">click here</a> or on the Validate menu option above.<br />\n
-		Once everything in both of the lists below is green then <a href=\"mwbe.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
-	global $mwbe_mixes, $mwbe_server_path, $action, $mwbe_dir, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_skins_dir, $mw_dir, $mw_resources, $mwbe_conf_skel, $mwbe_html_skel, $mwbe_mixes_index, $mwbe_cover_img, $mw_main_swf, $mw_main_ds, $mw_resources_swf, $mw_resources_js, $mw_resources_ds, $mwbe_tracks_dir, $mwbe_up_dir;
+		To re-check simply <a href=\"index.php?action=validate\">click here</a> or on the Validate menu option above.<br />\n
+		Once everything in both of the lists below is green then <a href=\"index.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
 
-	$wdir_arr = array($mwbe_mixes, $mwbe_playlist_dir, $mwbe_conf_dir, $mwbe_html_dir, $mwbe_mixes_index, $mwbe_tracks_dir, $mwbe_up_dir);
-	$rdir_arr = array($mw_dir, $mw_resources, $mwbe_skins_dir, $mw_main_swf, $mw_main_ds, $mw_resources_swf, $mw_resources_js, $mw_resources_ds);
+	$wdir_arr = array($_SESSION['mwbe_mixes'], $_SESSION['mwbe_playlist_dir'], $_SESSION['mwbe_conf_dir'], $_SESSION['mwbe_html_dir'], $_SESSION['mwbe_mixes_index'], $_SESSION['mwbe_tracks_dir'], $_SESSION['mwbe_up_dir']);
+	$rdir_arr = array($_SESSION['mw_dir'], $_SESSION['mw_resources'], $_SESSION['mwbe_skins_dir'], $_SESSION['mw_main_swf'], $_SESSION['mwbe_main_ds'], $_SESSION['mw_resources_swf'], $_SESSION['mw_resources_js'], $_SESSION['mw_resources_ds']);
 
 	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2 />\n";
 	foreach ($wdir_arr as &$wvalue) {
-		$wfile_test = $mwbe_server_path . $wvalue;
+		$wfile_test = $_SESSION['mwbe_server_path'] . $wvalue;
 		if (is_writable($wfile_test)) {
 			echo "<text class=\"good\">$wfile_test exists and is writable.</text /><br />\n";
 		} elseif (file_exists($wfile_test)) {
 			echo "<text class=\"bad\">$wfile_test exists but is not writable.</text /><br />\n";
-		} elseif (is_writable($mwbe_dir)) {
-			if ($wvalue == $mwbe_mixes_index) {
-				fopen ("$mwbe_mixes_index", "w");
+		} elseif (is_writable($_SESSION['mwbe_dir'])) {
+			if ($wvalue == $_SESSION['mwbe_mixes_index']) {
+				fopen ($_SESSION['mwbe_mixes_index'], "w");
 			} else {
 				mkdir ("$wfile_test", 0775);
 			}
@@ -461,7 +418,7 @@ function validate() {
 
 	// Exists and Readable Check
 	foreach ($rdir_arr as &$rvalue) {
-		$rfile_test = $mwbe_server_path . $rvalue;
+		$rfile_test = $_SESSION['mwbe_server_path'] . $rvalue;
 		if (file_exists($rfile_test)) {
 			echo "<text class=\"good\">$rfile_test exists and is readable.</text /><br />\n";
 		} else {
@@ -475,5 +432,10 @@ function validate() {
 </div />\n";
 	clearstatcache();
 
+}
+
+function mwbedocs() {
+	$_SESSION['mwbedocs_class'] = "class=\"active\"";
+	menu();
 }
 ?>
