@@ -1,6 +1,6 @@
 <?php
 
-$_SESSION['mwbe_dir'] = ""; // if you have installed MWBE in the root of a webserver leave blank
+$_SESSION['mwbe_dir'] = "/mwbe"; // if you have installed MWBE in the root of a webserver leave blank
 $_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . "/" . $_SESSION['mwbe_dir'];
 $_SESSION['mwbe_rel_path'] = "../";
 
@@ -11,28 +11,29 @@ if (isset($_GET['action'])) {
 } else {
 	$_SESSION['action'] = "index";	
 }
+
 $mix = $_GET["mix"];
 
-$_SESSION['mwbe_admin_dir'] = "admin/";  
-$_SESSION['mwbe_playlist_dir'] = "playlists/";
-$_SESSION['mwbe_conf_dir'] = "confs/";
-$_SESSION['mwbe_html_dir'] = "mixes/";
-$_SESSION['mwbe_skins_dir'] = "skins/";
-$_SESSION['mwbe_tracks_dir'] = "tracks/";
-$_SESSION['mwbe_up_dir'] = "archives/";
-$_SESSION['mwbe_mixes_index'] = "index.php";
-$_SESSION['mwbe_cover_img'] = 'cover.jpg';
+$_SESSION['mwbe_admin_dir'] = "/admin/";  
+$_SESSION['mwbe_playlist_dir'] = "/playlists/";
+$_SESSION['mwbe_conf_dir'] = "/confs/";
+$_SESSION['mwbe_html_dir'] = "/mixes/";
+$_SESSION['mwbe_skins_dir'] = "/skins/";
+$_SESSION['mwbe_tracks_dir'] = "/tracks/";
+$_SESSION['mwbe_up_dir'] = "/archives/";
+$_SESSION['mwbe_mixes_index'] = "/index.php";
+$_SESSION['mwbe_cover_img'] = '/cover.jpg';
 $_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
 $_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . "/" . $_SESSION['mwbe_dir'];
-$_SESSION['mw_dir'] = "mixwidget/";
-$_SESSION['mw_resources'] = "resources/";
-$_SESSION['mw_main_swf'] = $mw_dir . "mixwidget.swf";
-$_SESSION['mw_main_ds'] = $mw_dir . ".DS_Store";
-$_SESSION['mw_resources_swf'] = $mw_resources . "expressInstall.swf";
-$_SESSION['mw_resources_js'] = $mw_resources . "swfobject.js";
-$_SESSION['mw_resources_ds'] = $mw_resources . ".DS_Store";
+$_SESSION['mw_dir'] = "/mixwidget/";
+$_SESSION['mw_resources'] = "/resources/";
+$_SESSION['mw_main_swf'] = $_SESSION['mw_dir'] . "mixwidget.swf";
+$_SESSION['mw_main_ds'] = $_SESSION['mw_dir'] . ".DS_Store";
+$_SESSION['mw_resources_swf'] = $_SESSION['mw_resources'] . "expressInstall.swf";
+$_SESSION['mw_resources_js'] = $_SESSION['mw_resources'] . "swfobject.js";
+$_SESSION['mw_resources_ds'] = $_SESSION['mw_resources'] . ".DS_Store";
 $_SESSION['mw_mix_title'] = $_POST['mix_title'];
-$_SESSION['mw_mix_title_short'] = strtolower(str_replace("/([^a-zA-Z0-9s]| )/", "", $_SESSION['mw_mix_title']));
+$_SESSION['mw_mix_title_short'] = strtolower(preg_replace("/\W|\s/", "", $_SESSION['mw_mix_title']));
 $_SESSION['mw_mix_artist'] = $_POST['mix_artist'];
 $_SESSION['mw_mix_tracks_dir'] = $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/";
 $_SESSION['mw_mix_archive'] = $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . ".zip";
@@ -41,7 +42,7 @@ $_SESSION['mw_mix_conf'] = $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_
 $_SESSION['mw_mix_html'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".html";
 $_SESSION['mw_mix_allow_embed'] = "0";
 $_SESSION['mw_mix_allow_archive'] = "0";
-$_SESSION['$mw_skin_img'] = $_POST['skin_img'];
+$_SESSION['mw_skin_img'] = $_POST['skin_img'];
 // Will replace with associative array later so skins can be added more easily
 if ($_SESSION['mw_skin_img'] == "tak-sa-x.jpg") {
 	$_SESSION['mw_skin_tx'] = "120";

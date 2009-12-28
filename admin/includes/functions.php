@@ -28,11 +28,11 @@ function nav() {
 
 function menu() {
 	echo "<ul id=\"tabmenu\">
-			<li><a" . $_SESSION['index_class'] . "href=\"index.php?action=def\">Main</a></li>
-			<li><a" . $_SESSION['makemix_class'] . "href=\"index.php?action=makemix\">Make A Mix</a></li>
-			<li><a" . $_SESSION['editmix_class'] . "href=\"index.php?action=makemix\">Edit Your MixesMix</a></li>
-			<li><a" . $_SESSION['mwbedocs_class'] . "href=\"index.php?action=mwbedocs\">Documentation</a></li>
-			<li><a" . $_SESSION['validate_class'] . "href=\"index.php?action=validate\">Validate Installation</a></li>
+			<li><a " . $_SESSION['index_class'] . "href=\"index.php?action=index\">Main</a></li>
+			<li><a " . $_SESSION['makemix_class'] . "href=\"index.php?action=makemix\">Make A Mix</a></li>
+			<li><a " . $_SESSION['editmix_class'] . "href=\"index.php?action=editmix\">Edit Your Mixes</a></li>
+			<li><a " . $_SESSION['mwbedocs_class'] . "href=\"index.php?action=mwbedocs\">Documentation</a></li>
+			<li><a " . $_SESSION['validate_class'] . "href=\"index.php?action=validate\">Validate Installation</a></li>
 		</ul>
 		</div>";
 
@@ -72,9 +72,10 @@ function index() {
 function editmix() {
 	$_SESSION['editmix_class'] = "class=\"active\"";
 	menu();
-	echo "<div id=\"content\">:";
+	echo "<div id=\"content\">
+	<h2>This version of MixWidget doesn't support editing your mixes but hopefully we can work this out soon!</h2><br />\n";
 
-	$conf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mix'] . ".xml");
+	/*$conf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mix'] . ".xml");
 	$_SESSION['mix_title'] =  $conf_xml->title;
 
 	echo "<h2>" . $_SESSION['mix_title'] . "</h2>\n";
@@ -87,7 +88,7 @@ function editmix() {
 	foreach($xspf_xml->trackList->track as $test_track => $list_track) {
 		echo $list_track->title . "<br/>\n";
 
-	}
+	}*/
 }
 
 function makemix() {
@@ -96,33 +97,30 @@ function makemix() {
 	echo "<div id=\"content\">
 	<h2>Make a Mix - Choices, choices, choices...</h2>
 	Simply fill in the following information and click submit!
-
-	<form action=\"index.php?action=upfiles\" method=\"post\">\n
-Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" />\n
-<br />\n
-Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" />\n
-<br />\n
+	<form action=\"index.php?action=upfiles\" method=\"post\">
+Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" /><br />
+Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" /><br />
 Please select a skin for your mix tape:<br />
-<table border=\"0\" cellpadding=\"1\" />";
+<table border=\"0\" cellpadding=\"1\" />\n";
 
 	$skin_count = 1;
 	foreach (glob($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/*.jpg") as $skin) {
 		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/", '',$skin);
 		if ($skin_count == 1){
-			echo "<tr align=\"center\" valign=\"middle\">";
+			echo "<tr align=\"center\" valign=\"middle\">\n";
 		}
-		echo "<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />\n$skin_img\n</td />\n";
+		echo "<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />$skin_img</td>\n";
 		$skin_count++;
 		if ($skin_count == 7) {
-			echo "</tr />";
+			echo "</tr>\n";
 			$skin_count = 1;
 		}
 
 	}
-	echo "<table />";
-	echo "<input type=\"submit\" />\n
-</form>\n
-<br /><br />";
+	echo "</table>
+	<input type=\"submit\" />\n
+	</form>\n
+	<br /><br />";
 }
 
 function upfiles() {
@@ -133,8 +131,8 @@ function upfiles() {
 		Your choices so far:
 		The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
 		The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
-		Your selected skin image:<br />
-		<img height=\"240\" width=\"320\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "><br />
+		Your selected skin image: <img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+		shortname: " . $_SESSION['mw_mix_title_short'] . " 
 		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
 		<div class=\"directions\">
 			Some quick tips on formatting your MP3 file names:<br />
@@ -189,7 +187,6 @@ function verify() {
 	$zip_type_blacklist = ('multipart/x-zip');
 	$blacklist = array('php', 'php3', 'php4', 'phtml','exe');
 	$f_name = ( $_FILES['zipfile']['name']);
-	global $up_name;
 	$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename( $_FILES['zipfile']['name']);
 	$up_lc = strtolower($_FILES['zipfile']['name']);
 	$ver_tracks_dir = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'];
@@ -199,14 +196,12 @@ function verify() {
 
 
 	if (!move_uploaded_file($_FILES['zipfile']['tmp_name'], $up_name)) {
-		echo "uploaded file" . $_FILES['zipfile']['tmp_name'] . "<br />\n";
+		echo "uploaded file: " . $_FILES['zipfile']['tmp_name'] . "<br />\n";
 		echo "f_name: $f_name <br />\n";
 		echo "up_name: $up_name <br />\n";
 		echo "<text class=\"bad\">There was an error uploading the file.</text><br />\n";
-		tryagain();
 	} elseif (!in_array(end(explode('.', $up_lc)), $zip_ext_whitelist)) {
 		echo "$f_name is not a .zip file and has been removed.<br />";
-		del_zip();
 	} else {
 		$zip = new ZipArchive;
 		if ($zip->open("$up_name") === TRUE) {
@@ -374,7 +369,7 @@ function makehtml() {
 	$index_mix_embed = "\t<div id=\"tape\">
 	\t\t<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>
 	\t</div>";
-	$ver_index = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_mixes'];
+	$ver_index = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_mixes_index'];
 	$f_mixes = fopen("$ver_index", "a");
 	fwrite($f_mixes, $index_mix_embed);
 	fclose($f_mixes);

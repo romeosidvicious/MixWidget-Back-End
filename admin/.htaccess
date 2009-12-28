@@ -1,0 +1,7 @@
+AuthUserFile ./.htpasswd
+AuthGroupFile /dev/null
+AuthName "MixWidget Back End Admin Area"
+AuthType Basic
+<Limit GET POST>
+require valid-user
+</Limit>

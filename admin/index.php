@@ -12,6 +12,6 @@ require "includes/mwbe_conf.php";
 require "includes/functions.php";
 require "includes/getid3/getid3.php";
 include "header.php";
-menu();
+nav();
 include "footer.php";
 ?>
