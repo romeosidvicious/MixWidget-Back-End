@@ -6,154 +6,42 @@ html {
 body {
 	margin: 0;
 	padding: 0;
-}
-
-pre {
-	font 1em/1.7em monospace;
-	
-}
-
-#banner {
-	position: absolute;
-	top: 0;
-	left: 0;
-	height: 50px;
-	width: 100%;
-	padding: 0;
-	margin: 0;
-	border-bottom: 3px solid black;
-	color: black;
-	background: #777777;
-	z-index: 5;
-}
-
-body>#banner {
-	position: fixed;
-}
-
-#banner h1 {
-	margin: 0;
-	padding: 5px;
-}
-
-#tabmenu {
-	color: #000000;
-	position: absolute;
-	top: 52px;
-	padding: 0;
-	margin: 0;
-	z-index: 10;
-	left: 15px;
-}
-
-body>#tabmenu {
-	position: fixed;
-}
-
-#tabmenu li {
-	display: inline;
-	overflow: hidden;
-	margin: 0;
-	border: 0;
-	list-style-type: none;
-}
-
-#tabmenu a,a.active {
-	color: #000000;
-	background: #555555;
-	font-size: 12px;
-	font-weight: bold;
-	border: 3px solid black;
-	padding: 2px;
-	margin: 0 2px;
-	text-decoration: none;
-}
-
-#tabmenu a.active {
-	background: #777777;
-	color: #000000;
-	border-top: 4px solid #777777;
-	z-index: 30;
-}
-
-#tabmenu a:hover {
-	color: #000000;
-	background: #777777;
-}
-
-#tabmenu a:visited {
-	color: #000000;
-}
-
-#tabmenu a.active:hover {
-	background: #777777;
-	color: #FFFFFF;
-}
-
-#content {
-	background: #FFFFFF;
-	height: auto;
-	padding: 100px 70px 0px 70px;
-	z-index: 0;
-}
-
-#content h2 {
-	text-align: center;
-}
-
-div.good {
-	color: #008000;
-	font-weight: bold;
-}
-
-div.bad {
-	color: #FF0000;
-	font-weight: bold;
-}
-
-div.warn {
-	color: #FF9900;
-	font-weight: bold;
-}
-
-div.directions {
-	border-style: double;
-	background-color: #999999;
-}
-
-div.checks {
-	font-weight: bold;
-	line-height: 2em;
+	background-color: 000000;
+	color: ffffff;
 }
 
 div.tape {
 	float: center;
+	text-align: center;
+	border-style: inset;
+	border-width:thick;
+	border-color: ffaa11;
+	background-color: bb3300;
+	color: 000000;
+	margin-left:auto;
+	margin-right:auto;
+	width: 700px;	
 }
 
 div.embed {
 	float: center;
-	border: 1px solid black; 
+	background-color: ffffff;
+	color: 000000;
+	border-style: outset;
+	border-width:medium;
+	border-color: ffaa11; 
 	width: 400px; 
 	height: 50px; 
 	white-space: nowrap; 
-	overflow: auto;	
+	overflow: auto;
+	margin-left:auto;
+	margin-right:auto;	
 }
 
-p .warn {
-	color: #660000;
+h2 {
+	text-align: center;
 }
 
-text.good {
-	color: #008000;
-	font-weight: bold;
-}
-
-text.bad {
-	color: #FF0000;
-	font-weight: bold;
-}
-
-text.warn {
-	color: #FF9900;
-	font-weight: bold;
+h3 {
+	text-align: center;
 }

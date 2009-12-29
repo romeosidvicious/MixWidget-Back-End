@@ -1,10 +1,10 @@
-v0.1a
+MWBE 1.0b
 
-Fix index.php in root directory
-Fix mixes.include
-Add list of mixes to main page in admin
-Fix style.css for mixes/
-Add in handler for cover.jpg
-Add validate to the menu
-Add license information to script
-Clean up getid3
+Add functionality for uploading single or multiple mp3s instead of a zip file
+Add functionality for editing mixes
+Add functionality for deleting mixes
+Add more background sanity checking
+Add functionality for adding/removing playlist tracks
+Add sqlite DB for storing admin user/pass
+Remove .htpasswd and .htaccess
+Add mix handling to sqlite DB and move away from some of the xml processing

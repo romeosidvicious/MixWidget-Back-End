@@ -43,12 +43,14 @@ function index() {
 	menu();
 	echo "<div id=\"content\">
 		<h2>Welcome to the Mix Widget Backend</h2>
-		Currently this interface is not very pretty and the only working functionality is making a mix by uploading a .zip file. 
+		Currently this interface is not very pretty and the only working functionality is making a mix by uploading a .zip file either via ftp or MWBE. 
 		Please see the included TODO for information on the planned feature set.<br />
-		The menu options perform the following actions:
+		The menu options perform the following actions:<br />
 		<ul>
 			<li>Main - Takes you to this page.</li>
 			<li>Make A Mix - Takes you to the interface for making a mix.</li>
+			<li>Edit Your Mixes - Is not currently implemented but will be where you go to edit existing mixes</li>
+			<li>Documentation - Is currently empty but will contain documentation for MWBE</li>
 			<li>Validate - Checks to see if all of the required files and directories exist and have the proper permissions.</li>
 		</ul>";
 
@@ -56,14 +58,16 @@ function index() {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
-		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />\n<ul>\n";
+		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />
+		<ul>\n";
 		foreach (glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
 			$_SESSION['mix_name'] = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
-			$_SESSION['mix_title'] =  $conf_xml->title;
+			$mix_title = (string)$conf_xml->title;
+			$_SESSION['mix_title'] =  $mix_title;
 			// Once mix editing works: Add in a link to the html file and css to make and edit link that is visibly different.
 			// echo "<a href=\"index.php?action=editmix&mix=$_SESSION['mix_name']\">$_SESSION['mix_title']</a><br />\n";
-			echo "<li><a href=\"/mixes/" . $_SESSION['mix_name'] . ".html\">" . $_SESSION['mix_title'] . "</a><br /></li>\n";
+			echo "<li><a href=\"" . $_SESSION['mwbe_dir'] . "/mixes/" . $_SESSION['mix_name'] . ".html\">" . $_SESSION['mix_title'] . "</a><br /></li>\n";
 		}
 		echo "</ul>\n";
 	}
@@ -74,21 +78,6 @@ function editmix() {
 	menu();
 	echo "<div id=\"content\">
 	<h2>This version of MixWidget doesn't support editing your mixes but hopefully we can work this out soon!</h2><br />\n";
-
-	/*$conf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mix'] . ".xml");
-	$_SESSION['mix_title'] =  $conf_xml->title;
-
-	echo "<h2>" . $_SESSION['mix_title'] . "</h2>\n";
-
-	$xspf_xml = simplexml_load_file($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_playlist_dir'] . $_SESSION['mix'] . ".xspf");
-	echo "<h2>Full SimpleXML parsed playlist</h2><br />\n<pre>";
-	print_r($xspf_xml);
-	echo "</pre>";
-	echo "<h2>Testing Crap under here</h2>\n";
-	foreach($xspf_xml->trackList->track as $test_track => $list_track) {
-		echo $list_track->title . "<br/>\n";
-
-	}*/
 }
 
 function makemix() {
@@ -98,21 +87,23 @@ function makemix() {
 	<h2>Make a Mix - Choices, choices, choices...</h2>
 	Simply fill in the following information and click submit!
 	<form action=\"index.php?action=upfiles\" method=\"post\">
-Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" /><br />
-Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" /><br />
-Please select a skin for your mix tape:<br />
-<table border=\"0\" cellpadding=\"1\" />\n";
+	Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" /><br />
+	Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" /><br />
+	Do you wish to link to an archive of the tracks in the mix: Yes <input name=\"mwbe_archive_allow\" type=\"Radio\" value=\"1\" /> No <input name=\"mwbe_archive_allow\" type=\"Radio\" value=\"0\" /><br />
+	Do you wish to provide code to embed this mix on other sites: Yes <input name=\"mwbe_embed_allow\" type=\"Radio\" value=\"1\" /> No <input name=\"mwbe_embed_allow\" type=\"Radio\" value=\"0\" /><br />
+	Please select a skin for your mix tape:<br />
+	<table border=\"0\" cellpadding=\"1\">\n";
 
 	$skin_count = 1;
 	foreach (glob($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/*.jpg") as $skin) {
 		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/", '',$skin);
 		if ($skin_count == 1){
-			echo "<tr align=\"center\" valign=\"middle\">\n";
+			echo "\t<tr align=\"center\" valign=\"middle\">\n";
 		}
-		echo "<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />$skin_img</td>\n";
+		echo "\t\t<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />$skin_img</td>\n";
 		$skin_count++;
 		if ($skin_count == 7) {
-			echo "</tr>\n";
+			echo "\t</tr>\n";
 			$skin_count = 1;
 		}
 
@@ -126,13 +117,26 @@ Please select a skin for your mix tape:<br />
 function upfiles() {
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
+	$_SESSION['mw_mix_title'] = $_POST['mix_title'];
+	$_SESSION['mw_mix_title_short'] = strtolower(preg_replace("/\W|\s/", "", $_SESSION['mw_mix_title']));
+	$_SESSION['mw_mix_artist'] = $_POST['mix_artist'];
+	$_SESSION['mw_mix_tracks_dir'] = $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/";
+	$_SESSION['mw_mix_archive'] = $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . ".zip";
+	$_SESSION['mw_mix_playlist'] = $_SESSION['mwbe_playlist_dir'] . $_SESSION['mw_mix_title_short'] . ".xspf";
+	$_SESSION['mw_mix_conf'] = $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
+	$_SESSION['mw_mix_html'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".html";
+	$_SESSION['mw_skin_img'] = $_POST['skin_img'];
+	$_SESSION['mw_mix_allow_archive'] = $_POST['mwbe_archive_allow'];
+	$_SESSION['mw_mix_allow_embed'] = $_POST['mwbe_embed_allow'];
 	echo "<div id=\"content\">
 		<h2>Make a Mix - Upload a .zip file...</h2>
+		<div class=\"selections\">
 		Your choices so far:
 		The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
 		The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
-		Your selected skin image: <img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
-		shortname: " . $_SESSION['mw_mix_title_short'] . " 
+		Your selected skin image is:<br />
+		<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+		</div>
 		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
 		<div class=\"directions\">
 			Some quick tips on formatting your MP3 file names:<br />
@@ -152,7 +156,7 @@ function upfiles() {
 		The .zip file must meet the following specifications or it will be removed to prevent any malicious uploads:
 		<text class=\"warn\">
 		<ul>
-			<li>Contain ONLY MP3 files.</li>
+			<li>Contain ONLY MP3 files and single cover.jpg.</li>
 			<li>Contain no path information. MixWidget Frontend doesn't parse any farther than the root of the zip file.</li>
 			<li>Contain no password information.</li>
 			<li>Not be a multi-part zip.</li>
@@ -166,18 +170,31 @@ function upfiles() {
 		</ul>
 		</text>
 	</div>
+	The maximum size file your server will allow to upload is: " . ini_get('upload_max_filesize') . ".<br />
+	Attempting to upload a larger file through MixWidget Back End will fail. If you need to upload a larger file please transfer the file to your server via FTP, SCP, or some other method and use the option to enter a path to a file on the server.<br />
 	<form enctype=\"multipart/form-data\" action=\"index.php?action=verify\" method=\"POST\">
-	<input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"200000000\" />
-	Choose a zip file to upload: <input name=\"zipfile\" type=\"file\" /><input type=\"submit\" value=\"Upload Zip File\" />
+	Choose a zip file to upload: <input name=\"zipfile\" type=\"file\" />
+	<input type=\"submit\" value=\"Upload Zip File\" />
 	</form>
-	</div>";
+	</div>
+	<form action=\"index.php?action=verify\" method=\"POST\">
+	Enter a path to a zip file on the server: <input name=\"localzipfile\" type=\"text\" />
+	<input type=\"submit\" value=\"Submit\" />
+	</form>";
 }
 
 function verify() {
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
-	<div align=\"center\"<h2>Make a Mix - Processing Upload...</h2></div>";
+	<div align=\"center\"<h2>Make a Mix - Processing Upload...</h2></div>
+	<div class=\"selections\">
+	Your choices so far:
+	The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
+	The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
+	Your selected skin image is:<br />
+	<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+	</div>";
 
 	$zip_ext_whitelist = array('zip');
 	$mp3_ext_whitelist = array('mp3');
@@ -186,38 +203,49 @@ function verify() {
 	$zip_type = array('application/x-compressed', 'application/x-zip-compressed', 'application/zip');
 	$zip_type_blacklist = ('multipart/x-zip');
 	$blacklist = array('php', 'php3', 'php4', 'phtml','exe');
-	$f_name = ( $_FILES['zipfile']['name']);
-	$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename( $_FILES['zipfile']['name']);
-	$up_lc = strtolower($_FILES['zipfile']['name']);
 	$ver_tracks_dir = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'];
 	$up_archive = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_archive'];
 	$up_name_only = basename($up_name);
 	$up_archive_name_only = basename($up_archive);
 
-
-	if (!move_uploaded_file($_FILES['zipfile']['tmp_name'], $up_name)) {
-		echo "uploaded file: " . $_FILES['zipfile']['tmp_name'] . "<br />\n";
-		echo "f_name: $f_name <br />\n";
-		echo "up_name: $up_name <br />\n";
-		echo "<text class=\"bad\">There was an error uploading the file.</text><br />\n";
-	} elseif (!in_array(end(explode('.', $up_lc)), $zip_ext_whitelist)) {
-		echo "$f_name is not a .zip file and has been removed.<br />";
-	} else {
-		$zip = new ZipArchive;
-		if ($zip->open("$up_name") === TRUE) {
-			mkdir("$ver_tracks_dir", 0775);
-			$zip->extractTo($ver_tracks_dir);
-			$zip->close();
-			echo "Tracks for " . $_SESSION['mw_mix_title'] . "extracted from $up_name_only successfully!<br />\n";
-			if (rename("$up_name", "$up_archive")) {
-				echo "Uploaded file: $up_name_only has been renamed to $up_archive_name_only to allow downloading of the track archive...<br /><br />\n";
-			} else {
-				echo "There was a problem re-naming $up_name_only to $up_archive_name_only. No track archive will be available for download.<br />\n";
-			}
-		} else {
-			echo "There was a problem extracting the files from $up_name_only and it has been removed for security reasons.<br />\n";
-			del_zip();
+	if($_FILES['zipfile']['size'] > 0) {
+		$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename($_FILES['zipfile']['name']);
+		$up_lc = strtolower($_FILES['zipfile']['name']);
+		if(!move_uploaded_file($_FILES['zipfile']['tmp_name'], $up_name)) {
+			echo "uploaded file: " . $_FILES['zipfile']['tmp_name'] . "<br />\n";
+			echo "f_name: $f_name <br />\n";
+			echo "up_name: $up_name <br />\n";
+			echo "<text class=\"bad\">There was an error uploading the file.</text><br />\n";
+			exit(0);
+		} elseif(!in_array(end(explode('.', $up_lc)), $zip_ext_whitelist)) {
+			echo "<text class=\"bad\">" . $_FILES['zipfile']['name'] . " is not a .zip file and has been removed.</text><br />\n";
+			exit(0);
 		}
+	} elseif(isset($_POST['localzipfile'])) {
+		$local_zip_name = $_POST['localzipfile'];
+		$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename($_POST['localzipfile']);
+		if(!copy($local_zip_name, $up_name)) {
+			echo "<text class=\"bad\">The local file could not be copied for use with MixWidget backend. Please check the path and your file permissions and try again.</text><br />\n";
+			exit(0);
+		} elseif(!in_array(explode('.', strtolower($_POST['localzipfile'])), $zip_ext_whitelist)) {
+
+		}
+	}
+	$zip = new ZipArchive;
+	if ($zip->open("$up_name") === TRUE) {
+		mkdir("$ver_tracks_dir", 0775);
+		$zip->extractTo($ver_tracks_dir);
+		$zip->close();
+		echo "Tracks for " . $_SESSION['mw_mix_title'] . "extracted from $up_name_only successfully!<br />\n";
+		if (rename("$up_name", "$up_archive")) {
+			echo "Uploaded file: $up_name_only has been renamed to $up_archive_name_only to allow downloading of the track archive...<br /><br />\n";
+		} else {
+			echo "There was a problem re-naming $up_name_only to $up_archive_name_only. No track archive will be available for download.<br />\n";
+		}
+	} else {
+		echo "There was a problem extracting the files from $up_name_only and it has been removed for security reasons.<br />\n";
+		unlink($up_name);
+		exit(0);
 	}
 
 	$pl_playlist = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_playlist'];
@@ -228,7 +256,8 @@ function verify() {
 	$f_pl_head = fopen("$pl_playlist", "w");
 	fwrite($f_pl_head, $pl_head);
 	fclose($f_pl_head);
-	echo "<h3>Processing MP3s now...</h3>\n<div class=\"process\">";
+	echo "<h3>Processing MP3s now...</h3>
+	<div class=\"process\">\n";
 	foreach (glob("$ver_tracks_dir*.mp3") as $pre_song) {
 		$pre_song_name_only = basename($pre_song);
 		echo "<text class=\"pr_head\">Processing $pre_song_name_only...<br /></text>\n";
@@ -336,95 +365,105 @@ function makehtml() {
 	$flash_var_config = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
 	$flash_var_pl = $_SESSION['mwbe_site_url'] . $_SESSION['mw_mix_playlist'];
 	$flash_var_skin = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_skins_dir'] . $_SESSION['mw_skin_img'];
-	if ($_SESSION['mw_mix_allow_archive'] == "0") {
-		$html_archive = "<a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . '.zip' . "\">Track Archive</a>";
-	} else {
-		$$html_archive = "This mix does not have an archive to download";
+	if(file_exists((string)$_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'] . "cover.jpg")) {
+		$html_cover = "<img src=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mw_mix_tracks_dir'] . "cover.jpg\">";
 	}
-	if ($_SESSION['mw_mix_allow_embed'] == "0") {
-		$html_embed = "<code>&lt;embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"&gt;&lt;/embed&gt;</code>";
-	} else {
-		$html_embed = "This mix does not allow embeding";
+	if ($_SESSION['mw_mix_allow_archive'] == "1") {
+		$html_archive = "<a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . '.zip' . "\">Track Archive</a>";
+	}
+	if ($_SESSION['mw_mix_allow_embed'] == "1") {
+		$html_embed = "<div class=\"embed\"><code>&lt;embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"&gt;&lt;/embed&gt;</code></div>";
 	}
 	$mwbe_html_page = "<html>
-	<head>\t
-	<link type=\"text/css\" rel=\"stylesheet\" href=\"includes/style.css\">\t
-	<title>The MixWidget Frontend</title>
 	<head>
-	<body>\t
-	<div id=\"tape\">\t\t
-	<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>\t
-	</div>\t
-	<div id=\"content\">\t\t
-	$html_archive\t
-	</div>\t
-	<div id=\"embed\">$html_embed</div>
+	\t<link type=\"text/css\" rel=\"stylesheet\" href=\"../includes/style.css\">
+	\t<title>" . $_SESSION['mw_mix_title'] . " - via MixWidget Backend</title>
+	<head>
+	<body>
+	\t<div class=\"tape\">
+	\t\t$html_cover<br />
+	\t\t<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed><br />
+	\t\t$html_archive<br />
+	\t\t$html_embed<br />
+	\t</div>
 	</body>
 	</html>";
 	$ver_html = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_html'];
 	$f_html = fopen("$ver_html", "w");
 	fwrite($f_html, $mwbe_html_page);
 	fclose($f_html);
-
-	$index_mix_embed = "\t<div id=\"tape\">
-	\t\t<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>
-	\t</div>";
+	$index_mix_embed = "<hr />
+	<div class=\"tape\">
+	<h2>" . $_SESSION['mw_mix_title'] . "</h2>
+	$html_cover<br />
+	<embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"></embed>
+	<br />
+	$html_archive<br />
+	$html_embed<br />
+	</div><br />
+	<hr />";
 	$ver_index = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_mixes_index'];
 	$f_mixes = fopen("$ver_index", "a");
 	fwrite($f_mixes, $index_mix_embed);
 	fclose($f_mixes);
 }
 
+function make_mix_list() {
+
+}
+
 function validate() {
 	$_SESSION['validate_class'] = "class=\"active\"";
 	menu();
-	echo "<div id=\"content\">\n
-		<div align=\"center\"><h2>Directory and File Validation</h2></div />\n
-		To re-check simply <a href=\"index.php?action=validate\">click here</a> or on the Validate menu option above.<br />\n
+	echo "<div id=\"content\">
+		<h2>Directory and File Validation</h2>
+		To re-check simply <a href=\"index.php?action=validate\">click here</a> or on the Validate menu option above.<br />
 		Once everything in both of the lists below is green then <a href=\"index.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
 
 	$wdir_arr = array($_SESSION['mwbe_mixes'], $_SESSION['mwbe_playlist_dir'], $_SESSION['mwbe_conf_dir'], $_SESSION['mwbe_html_dir'], $_SESSION['mwbe_mixes_index'], $_SESSION['mwbe_tracks_dir'], $_SESSION['mwbe_up_dir']);
 	$rdir_arr = array($_SESSION['mw_dir'], $_SESSION['mw_resources'], $_SESSION['mwbe_skins_dir'], $_SESSION['mw_main_swf'], $_SESSION['mwbe_main_ds'], $_SESSION['mw_resources_swf'], $_SESSION['mw_resources_js'], $_SESSION['mw_resources_ds']);
 
-	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2 />\n";
+	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2>\n";
 	foreach ($wdir_arr as &$wvalue) {
 		$wfile_test = $_SESSION['mwbe_server_path'] . $wvalue;
 		if (is_writable($wfile_test)) {
-			echo "<text class=\"good\">$wfile_test exists and is writable.</text /><br />\n";
+			echo "<text class=\"good\">$wfile_test exists and is writable.</text><br />\n";
 		} elseif (file_exists($wfile_test)) {
-			echo "<text class=\"bad\">$wfile_test exists but is not writable.</text /><br />\n";
+			echo "<text class=\"bad\">$wfile_test exists but is not writable.</text><br />\n";
 		} elseif (is_writable($_SESSION['mwbe_dir'])) {
 			if ($wvalue == $_SESSION['mwbe_mixes_index']) {
 				fopen ($_SESSION['mwbe_mixes_index'], "w");
 			} else {
 				mkdir ("$wfile_test", 0775);
 			}
-			echo "<text class=\"warn\">$wfile_test did not exist but was created for you.</text /><br />\n";
+			echo "<text class=\"warn\">$wfile_test did not exist but was created for you.</text><br />\n";
 		} else {
-			echo "<text class=\"bad\">$wfile_test does not exist and cannot be created for you.</text /><br />\n";
+			echo "<text class=\"bad\">$wfile_test does not exist and cannot be created for you.</text><br />\n";
 		}
 	}
-	echo "</div />\n<div class=\"directions\"><p class=\"warn\">The recommended configuration is for the above files and directories to be writable by the user and webserver but not world. How you accomplish this depends on your webhost. However if you have to chmod dirs to 777 and then get hacked don't blame me. If you have a webhost that forces you to use 777 perms to create web writable directories then it's time to find a new one.</p />\n
-<p>Any directory or file listed above in <text class=\"good\">green</text /> is configured to allow MixWidget Frontend to work properly but could still have insecure permissions.</p />\n
-<p>Any directory or file listed about in <text class=\"warn\">orange</text /> did not exist but has been created for you and has permissions as secure as possible for MixWidget Frontend to work properly</p />\n
-<p>And directory or file listed above in <text class=\"bad\">red</text /> either has permissions to restrictive for MixWidget Frontend to work properly or does not exist and cannot be created. In which case you will have to manually set the permissions or in the case of the directory or file not exists re-read the INSTALL document included with MixWidget Frontend.</p />\n
-</div />\n";
-	echo "<div class=\"checks\"><h2>Readable File and Directory Checks</h2 />\n";
+	echo "</div>
+	<div class=\"directions\"><p class=\"warn\">The recommended configuration is for the above files and directories to be writable by the user and webserver but not world. How you accomplish this depends on your webhost. However if you have to chmod dirs to 777 and then get hacked don't blame me. If you have a webhost that forces you to use 777 perms to create web writable directories then it's time to find a new one.</p>
+<p>Any directory or file listed above in <text class=\"good\">green</text /> is configured to allow MixWidget Frontend to work properly but could still have insecure permissions.</p>
+<p>Any directory or file listed about in <text class=\"warn\">orange</text /> did not exist but has been created for you and has permissions as secure as possible for MixWidget Frontend to work properly</p>
+<p>And directory or file listed above in <text class=\"bad\">red</text /> either has permissions to restrictive for MixWidget Frontend to work properly or does not exist and cannot be created. In which case you will have to manually set the permissions or in the case of the directory or file not exists re-read the INSTALL document included with MixWidget Frontend.</p>
+</div>
+<div class=\"checks\"><h2>Readable File and Directory Checks</h2>\n";
 
 	// Exists and Readable Check
 	foreach ($rdir_arr as &$rvalue) {
 		$rfile_test = $_SESSION['mwbe_server_path'] . $rvalue;
 		if (file_exists($rfile_test)) {
-			echo "<text class=\"good\">$rfile_test exists and is readable.</text /><br />\n";
+			echo "<text class=\"good\">$rfile_test exists and is readable.</text><br />\n";
 		} else {
-			echo "<text class=\"bad\">$rfile_test does not exist.</text /><br />\n";
+			echo "<text class=\"bad\">$rfile_test does not exist.</text><br />\n";
 		}
 	}
-	echo "</div />\n<div class=\"directions\"><p class=\"warn\">The checks run on the files above only verify that they exist and can be read by MixWidget Frontend. This does not insure that these files have secure permissions.</p />\n
-<p>Any file or directory listed above in <text class=\"good\">green</text /> has at least the minimum permissions necessary for MixWidget Frontent to function properly.</p />\n
-<p>Any file or directory listed above in <text class=\"bad\">red</text /> does not exist.</p />\n
-<p class=\"warn\">Any missing files or directories in this list will cause MixWidget Frontend not to function properly. Please read the INSTALL document and correct any errors above before attempting to use MixWidget Frontend.</p />\n
-</div />\n";
+	echo "</div>
+	<div class=\"directions\"><p class=\"warn\">The checks run on the files above only verify that they exist and can be read by MixWidget Frontend. This does not insure that these files have secure permissions.</p>
+<p>Any file or directory listed above in <text class=\"good\">green</text /> has at least the minimum permissions necessary for MixWidget Frontent to function properly.</p>
+<p>Any file or directory listed above in <text class=\"bad\">red</text /> does not exist.</p>
+<p class=\"warn\">Any missing files or directories in this list will cause MixWidget Frontend not to function properly. Please read the INSTALL document and correct any errors above before attempting to use MixWidget Frontend.</p>
+</div>\n";
 	clearstatcache();
 
 }

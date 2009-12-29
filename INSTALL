@@ -1,13 +1,45 @@
-I will provide ftp directions and such once this is ready for prime time. Until then you get this:
+MixWidget Back End (MWBE) Installation Instructions:
 
-Place all files in a web accessible directory
-Password protect admin/
-Run admin/mwbe.php?action=validate
-Create any missing directories
-Fix any permission problems
-Start making mixes
+NOTE: If your webserver does not support .htaccess and .htpasswd you MUST secure the admin/ directory in some manner. If you do not anyone will be able to access this script and upload files to your server.
 
-THIS SCRIPT LETS FILES BE UPLOADED TO YOUR WEBHOST
-IF YOU DON'T PASSWORD PROTECT /admin DO NOT WHINE TO ME WHEN YOUR SEVER GETS 0WNED.
 
-I do not provide instructions on how to password protect your directory because if you don't know how already then this script isn't ready for you to use.
+Shell:
+
+Upload the MWBE tar.gz to your server.
+Login in to your shell and extract MWBE into whatever directory you wish.
+Edit admin/includes/mwbe_conf.php and put in the path to your MWBE install. (This path is relative to the docroot on your webseverver.)
+Change the admin password in admin/.htpasswd
+
+Make the following files and dirs world readable/writable (chmod 777):
+whatever dir you uploaded MWBE to
+archives/
+confs/
+mixes/
+playlists/
+tracks/
+mixes.php
+
+Point your browser to http://www.yourdomain.com/<some dir where you extracted MWBE>/admin
+Start making mix tapes
+
+FTP:
+
+Extract the MWBE tar.gz to an empty directory on your hard drive
+Go to http://www.clockwatchers.com/htaccess_tool.html and scroll down to 2. .htpasswd Tool
+Put in a username and password and click Create It
+Go to the admin directory in the directory you just extracted the files and open .htpasswd with a text editor (notepad NOT wordpad)
+Delete the current username and password in .htpasswd and paste in the results from clockwatchers.com
+Open admin/includes/mwbe_conf.php in a text editor change the $mwbe_dir variable to match the directory you plan to upload MWBE to.
+   If you plan to acess MWBE at http://www.<somedomain>.com/mwbe then this should be /mwbe. It will be whatever comes directly after the domain name.
+Use your FTP client to upload all of the files to an empty directory on your webserver
+Use your FTP client to make sure the following files and directories are readable and writable by everyone (world or 777 permissions):
+whatever dir you uploaded MWBE to
+archives/
+confs/
+mixes/
+playlists/
+tracks/
+mixes.php
+
+Point your browser to http://www.yourdomain.com/<some dir where you extracted MWBE>/admin
+Start making mix tapes
