@@ -1,14 +1,12 @@
 <?php
-/*User Editable Variables
- * Change the following variables to match your hosts configuration
- */
-
-$mwbe_dir = "/mwbe"; //leave blank if you are installing into the document root of a domain or subdomain. Otherwise this is the directory you put mwbe in
 
 //Nothing below this line should need editing
-$_SESSION['mwbe_dir'] = $mwbe_dir;
-$_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . "/" . $_SESSION['mwbe_dir'];
+$_SESSION['mwbe_dir'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
+$_SESSION['mwbe_admin_path'] = $_SESSION['mwbe_dir'] . $_SESSION['mwbe_admin_dir'];
+$_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . $_SESSION['mwbe_dir'];
 $_SESSION['mwbe_rel_path'] = "../";
+$_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
+$_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . $_SESSION['mwbe_dir'];
 
 if (isset($_GET['action'])) {
 	$_SESSION['action'] = $_GET['action'];
@@ -18,25 +16,15 @@ if (isset($_GET['action'])) {
 	$_SESSION['action'] = "index";
 }
 
-$mix = $_GET["mix"];
+$_SESSION['mwbe_writable_dirs'] = array("/playlists/", "/confs/", "/mixes/", "/tracks/", "/archives/");
 $_SESSION['mwbe_admin_dir'] = "/admin/";
 $_SESSION['mwbe_playlist_dir'] = "/playlists/";
 $_SESSION['mwbe_conf_dir'] = "/confs/";
 $_SESSION['mwbe_html_dir'] = "/mixes/";
-$_SESSION['mwbe_skins_dir'] = "/skins/";
 $_SESSION['mwbe_tracks_dir'] = "/tracks/";
 $_SESSION['mwbe_up_dir'] = "/archives/";
-$_SESSION['mwbe_mixes_index'] = "/mixes.php";
 $_SESSION['mwbe_cover_img'] = '/cover.jpg';
-$_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
-$_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . "/" . $_SESSION['mwbe_dir'];
-$_SESSION['mw_dir'] = "/mixwidget/";
-$_SESSION['mw_resources'] = "/resources/";
-$_SESSION['mw_main_swf'] = $_SESSION['mw_dir'] . "mixwidget.swf";
-$_SESSION['mw_main_ds'] = $_SESSION['mw_dir'] . ".DS_Store";
-$_SESSION['mw_resources_swf'] = $_SESSION['mw_resources'] . "expressInstall.swf";
-$_SESSION['mw_resources_js'] = $_SESSION['mw_resources'] . "swfobject.js";
-$_SESSION['mw_resources_ds'] = $_SESSION['mw_resources'] . ".DS_Store";
+
 
 if ($_SESSION['mw_skin_img'] == "tak-sa-x.jpg") {
 	$_SESSION['mw_skin_tx'] = "120";

@@ -21,6 +21,8 @@ function nav() {
 		editmix();
 	} elseif ($_SESSION['action'] == "mwbedocs") {
 		mwbedocs();
+	} elseif ($_SESSION['action'] == "delmix") {
+		delmix();
 	} else {
 		index();
 	}
@@ -77,7 +79,65 @@ function editmix() {
 	$_SESSION['editmix_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
-	<h2>This version of MixWidget doesn't support editing your mixes but hopefully we can work this out soon!</h2><br />\n";
+	<h2>This version of MixWidget only supports deleting your mixes so if you mess up you have to upload your mix again.<br />Editing existing mixes is coming soon...</h2><br />\n";
+	if(!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
+		echo "You currrently have no mixes!<br />\n";
+	} else {
+		echo "<h2>You currently have the following mixes:</h2>\n";
+		echo "This is a list of the mixes you have created using the Mix Widget Backend. Clicking the delete button will delete the mix that is listed with the button.<br />
+		<h2>WARNING</h2>
+		<strong>There is no verification for deleting mixes at the present time. If you press delete it WILL delete a mix without asking you to verify.</strong>
+		<ul>\n";
+		foreach(glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
+			$mix_name = basename($xml, ".xml");
+			$conf_xml = simplexml_load_file("$xml");
+			$mix_title = (string)$conf_xml->title;
+			echo "<li>$mix_title - <form action=\"index.php?action=delmix\" method=\"post\"><input name=\"mix_title\" type=\"hidden\" value=\"$mix_title\"><input name=\"mix_name\" type=\"hidden\" value=\"$mix_name\"><input type=\"submit\" value=\"DELETE $mix_title!\"/></li>
+			</form>
+			";
+		}
+		echo "</ul>\n";
+	}
+}
+
+function delmix() {
+	$_SESSION['editmix_class'] = "class=\"active\"";
+	menu();
+	echo "<div id=\"content\">
+	<h2>Removing " . $_POST['mix_title'] . " as requested</h2>
+	<div class=\"process\">\n";
+		
+	foreach($_SESSION['mwbe_writable_dirs'] as $mix_del_dir) {
+		switch($mix_del_dir) {
+		case '/mixes/':
+			echo "Removing html file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html<br />\n";
+			echo "Removing include file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include<br />\n";
+			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html");
+			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include");
+			break;
+		case '/confs/':
+			echo "Removing configuration file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml<br />\n";
+			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml");
+			break;
+		case '/archives/':
+			echo "Removing zip archive for " . $_POST['mix_title'] . ":"  . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip<br />\n";
+			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip");
+			break;
+		case '/tracks/':
+			foreach(glob($_SESSION['mwbe_server_path'] . $mix_del_dir . $_POST['mix_name'] . "/*") as $mix_del_track) {
+				echo "Removing track: $mix_del_track for " . $_POST['mix_title'] . "<br />\n";
+				unlink($mix_del_track);
+			}
+			echo "Removing tracks directory for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . "<br />\n";
+			closedir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
+			rmdir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
+			break;
+		}
+	}
+	echo "</div>
+	<h2>If You Don't See Any Errors We Deleted " .  $_POST['mix_title'] . " Successfully!</h2>
+	<h2>If You Do See Errors Copy Them And Send Them To romeosidvicious [at] gmail so I can try and fix the issue.</h2>";
+	
 }
 
 function makemix() {
@@ -125,6 +185,7 @@ function upfiles() {
 	$_SESSION['mw_mix_playlist'] = $_SESSION['mwbe_playlist_dir'] . $_SESSION['mw_mix_title_short'] . ".xspf";
 	$_SESSION['mw_mix_conf'] = $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
 	$_SESSION['mw_mix_html'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".html";
+	$_SESSION['mw_mix_include'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".include";
 	$_SESSION['mw_skin_img'] = $_POST['skin_img'];
 	$_SESSION['mw_mix_allow_archive'] = $_POST['mwbe_archive_allow'];
 	$_SESSION['mw_mix_allow_embed'] = $_POST['mwbe_embed_allow'];
@@ -402,14 +463,10 @@ function makehtml() {
 	$html_embed<br />
 	</div><br />
 	<hr />";
-	$ver_index = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_mixes_index'];
-	$f_mixes = fopen("$ver_index", "a");
+	$ver_include = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_include'];
+	$f_mixes = fopen("$ver_include", "a");
 	fwrite($f_mixes, $index_mix_embed);
 	fclose($f_mixes);
-}
-
-function make_mix_list() {
-
 }
 
 function validate() {
@@ -421,10 +478,11 @@ function validate() {
 		Once everything in both of the lists below is green then <a href=\"index.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
 
 	$wdir_arr = array($_SESSION['mwbe_mixes'], $_SESSION['mwbe_playlist_dir'], $_SESSION['mwbe_conf_dir'], $_SESSION['mwbe_html_dir'], $_SESSION['mwbe_mixes_index'], $_SESSION['mwbe_tracks_dir'], $_SESSION['mwbe_up_dir']);
-	$rdir_arr = array($_SESSION['mw_dir'], $_SESSION['mw_resources'], $_SESSION['mwbe_skins_dir'], $_SESSION['mw_main_swf'], $_SESSION['mwbe_main_ds'], $_SESSION['mw_resources_swf'], $_SESSION['mw_resources_js'], $_SESSION['mw_resources_ds']);
+	$rdir_arr = array("/mixwidget", "/resources", "/mixwidget/mixwidget.swf", "/mixwidget/.DS_Store", "/resources/expressInstall.swf", "/resources/swfobject.js", "/resources/.DS_Store", "/skins");
+	//($_SESSION['mw_dir'], $_SESSION['mw_resources'], $_SESSION['mwbe_skins_dir'], $_SESSION['mw_main_swf'], $_SESSION['mwbe_main_ds'], $_SESSION['mw_resources_swf'], $_SESSION['mw_resources_js'], $_SESSION['mw_resources_ds']);
 
 	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2>\n";
-	foreach ($wdir_arr as &$wvalue) {
+	foreach ($_SESSION['mwbe_writable_dirs'] as $wvalue) {
 		$wfile_test = $_SESSION['mwbe_server_path'] . $wvalue;
 		if (is_writable($wfile_test)) {
 			echo "<text class=\"good\">$wfile_test exists and is writable.</text><br />\n";
@@ -450,7 +508,7 @@ function validate() {
 <div class=\"checks\"><h2>Readable File and Directory Checks</h2>\n";
 
 	// Exists and Readable Check
-	foreach ($rdir_arr as &$rvalue) {
+	foreach ($rdir_arr as $rvalue) {
 		$rfile_test = $_SESSION['mwbe_server_path'] . $rvalue;
 		if (file_exists($rfile_test)) {
 			echo "<text class=\"good\">$rfile_test exists and is readable.</text><br />\n";

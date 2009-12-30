@@ -6,11 +6,14 @@ echo "<html>
 <head>
 <body>
 \t<div>
-\t\t<h2>The Mix Widget Backend</h2>\n
+\t\t<h2>The Mix Widget Back End V1.0 beta 1</h2>
 \t\t<h3>For your listening pleasure:</h3>
 ";
 
-include "mixes.php";
+echo "$includes_dir<br />\n";
+foreach(glob("mixes/*.include") as $mix_include) {
+	include "$mix_include";
+}
 
 echo "</body>
 </html>";
