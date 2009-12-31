@@ -1,4 +1,4 @@
-All original code is copyright Mark L. Potter and is liecensed under the GPLv2. 
+All original code is copyright Mark L. Potter and is licensed under the GPLv2. 
 
 This is beta code and may not work. Read the included INSTALL for setup documentation. Please take note of the various requirements and restrictions listed as there is currently no way to remove a mix from within the interface. If you mess up a mix you may end up unable to delete it as the files created are owned by the webserver. This functionality will be implemented before the full release. Currently all security relies on .htaccess, which is included, but if your webserver doesn't support .htaccess and you have no other way of securing the admin/ directory please do not use this script at this time. Work is underway on adding built in admin user management. See the included TODO for a list of planned features before a gold release.
 

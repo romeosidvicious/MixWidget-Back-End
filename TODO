@@ -1,10 +1,11 @@
 MWBE 1.0b
 
-Add functionality for uploading single or multiple mp3s instead of a zip file
+This TODO is pretty much in order of importance to me
+
 Add functionality for editing mixes
-Add functionality for deleting mixes
+Add functionality for uploading single or multiple mp3s instead of a zip file
 Add more background sanity checking
-Add functionality for adding/removing playlist tracks
 Add sqlite DB for storing admin user/pass
 Remove .htpasswd and .htaccess
 Add mix handling to sqlite DB and move away from some of the xml processing
+Clean up code even more

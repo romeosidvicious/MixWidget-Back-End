@@ -56,13 +56,13 @@ function index() {
 			<li>Validate - Checks to see if all of the required files and directories exist and have the proper permissions.</li>
 		</ul>";
 
-	if (!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
+	if (!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['confs'] . "*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
 		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />
 		<ul>\n";
-		foreach (glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
+		foreach (glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['confs'] . "*.xml") as $xml) {
 			$_SESSION['mix_name'] = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
 			$mix_title = (string)$conf_xml->title;
@@ -80,7 +80,7 @@ function editmix() {
 	menu();
 	echo "<div id=\"content\">
 	<h2>This version of MixWidget only supports deleting your mixes so if you mess up you have to upload your mix again.<br />Editing existing mixes is coming soon...</h2><br />\n";
-	if(!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
+	if(!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['confs'] . "*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
@@ -88,7 +88,7 @@ function editmix() {
 		<h2>WARNING</h2>
 		<strong>There is no verification for deleting mixes at the present time. If you press delete it WILL delete a mix without asking you to verify.</strong>
 		<ul>\n";
-		foreach(glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
+		foreach(glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['confs'] . "*.xml") as $xml) {
 			$mix_name = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
 			$mix_title = (string)$conf_xml->title;
@@ -106,38 +106,37 @@ function delmix() {
 	echo "<div id=\"content\">
 	<h2>Removing " . $_POST['mix_title'] . " as requested</h2>
 	<div class=\"process\">\n";
-		
+
 	foreach($_SESSION['mwbe_writable_dirs'] as $mix_del_dir) {
 		switch($mix_del_dir) {
-		case '/mixes/':
-			echo "Removing html file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html<br />\n";
-			echo "Removing include file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html");
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include");
-			break;
-		case '/confs/':
-			echo "Removing configuration file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml");
-			break;
-		case '/archives/':
-			echo "Removing zip archive for " . $_POST['mix_title'] . ":"  . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip");
-			break;
-		case '/tracks/':
-			foreach(glob($_SESSION['mwbe_server_path'] . $mix_del_dir . $_POST['mix_name'] . "/*") as $mix_del_track) {
-				echo "Removing track: $mix_del_track for " . $_POST['mix_title'] . "<br />\n";
-				unlink($mix_del_track);
-			}
-			echo "Removing tracks directory for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . "<br />\n";
-			closedir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
-			rmdir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
-			break;
+			case '/mixes/':
+				echo "Removing html file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html<br />\n";
+				echo "Removing include file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include<br />\n";
+				unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html");
+				unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include");
+				break;
+			case '/confs/':
+				echo "Removing configuration file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml<br />\n";
+				unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml");
+				break;
+			case '/archives/':
+				echo "Removing zip archive for " . $_POST['mix_title'] . ":"  . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip<br />\n";
+				unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip");
+				break;
+			case '/tracks/':
+				foreach(glob($_SESSION['mwbe_server_path'] . $mix_del_dir . $_POST['mix_name'] . "/*") as $mix_del_track) {
+					echo "Removing track: $mix_del_track for " . $_POST['mix_title'] . "<br />\n";
+					unlink($mix_del_track);
+				}
+				echo "Removing tracks directory for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . "<br />\n";
+				rmdir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
+				break;
 		}
 	}
 	echo "</div>
 	<h2>If You Don't See Any Errors We Deleted " .  $_POST['mix_title'] . " Successfully!</h2>
 	<h2>If You Do See Errors Copy Them And Send Them To romeosidvicious [at] gmail so I can try and fix the issue.</h2>";
-	
+
 }
 
 function makemix() {
@@ -155,8 +154,8 @@ function makemix() {
 	<table border=\"0\" cellpadding=\"1\">\n";
 
 	$skin_count = 1;
-	foreach (glob($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/*.jpg") as $skin) {
-		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/", '',$skin);
+	foreach (glob($_SESSION['mwbe_server_path'] . "/skins/*.jpg") as $skin) {
+		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/skins/", '',$skin);
 		if ($skin_count == 1){
 			echo "\t<tr align=\"center\" valign=\"middle\">\n";
 		}
@@ -180,12 +179,12 @@ function upfiles() {
 	$_SESSION['mw_mix_title'] = $_POST['mix_title'];
 	$_SESSION['mw_mix_title_short'] = strtolower(preg_replace("/\W|\s/", "", $_SESSION['mw_mix_title']));
 	$_SESSION['mw_mix_artist'] = $_POST['mix_artist'];
-	$_SESSION['mw_mix_tracks_dir'] = $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/";
-	$_SESSION['mw_mix_archive'] = $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . ".zip";
-	$_SESSION['mw_mix_playlist'] = $_SESSION['mwbe_playlist_dir'] . $_SESSION['mw_mix_title_short'] . ".xspf";
-	$_SESSION['mw_mix_conf'] = $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
-	$_SESSION['mw_mix_html'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".html";
-	$_SESSION['mw_mix_include'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".include";
+	$_SESSION['mw_mix_tracks_dir'] = $_SESSION['mwbe_writable_dirs']['tracks'] . $_SESSION['mw_mix_title_short'] . "/";
+	$_SESSION['mw_mix_archive'] = $_SESSION['mwbe_writable_dirs']['archives'] . $_SESSION['mw_mix_title_short'] . ".zip";
+	$_SESSION['mw_mix_playlist'] = $_SESSION['mwbe_writable_dirs']['playlists'] . $_SESSION['mw_mix_title_short'] . ".xspf";
+	$_SESSION['mw_mix_conf'] = $_SESSION['mwbe_writable_dirs']['confs'] . $_SESSION['mw_mix_title_short'] . ".xml";
+	$_SESSION['mw_mix_html'] = $_SESSION['mwbe_writable_dirs']['mixes'] . $_SESSION['mw_mix_title_short'] . ".html";
+	$_SESSION['mw_mix_include'] = $_SESSION['mwbe_writable_dirs']['mixes'] . $_SESSION['mw_mix_title_short'] . ".include";
 	$_SESSION['mw_skin_img'] = $_POST['skin_img'];
 	$_SESSION['mw_mix_allow_archive'] = $_POST['mwbe_archive_allow'];
 	$_SESSION['mw_mix_allow_embed'] = $_POST['mwbe_embed_allow'];
@@ -196,7 +195,7 @@ function upfiles() {
 		The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
 		The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
 		Your selected skin image is:<br />
-		<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+		<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/skins/" . $_SESSION['mw_skin_img'] . "\"><br />
 		</div>
 		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
 		<div class=\"directions\">
@@ -254,7 +253,7 @@ function verify() {
 	The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
 	The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
 	Your selected skin image is:<br />
-	<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+	<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/skins/" . $_SESSION['mw_skin_img'] . "\"><br />
 	</div>";
 
 	$zip_ext_whitelist = array('zip');
@@ -270,7 +269,7 @@ function verify() {
 	$up_archive_name_only = basename($up_archive);
 
 	if($_FILES['zipfile']['size'] > 0) {
-		$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename($_FILES['zipfile']['name']);
+		$up_name = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['archives'] . basename($_FILES['zipfile']['name']);
 		$up_lc = strtolower($_FILES['zipfile']['name']);
 		if(!move_uploaded_file($_FILES['zipfile']['tmp_name'], $up_name)) {
 			echo "uploaded file: " . $_FILES['zipfile']['tmp_name'] . "<br />\n";
@@ -284,7 +283,7 @@ function verify() {
 		}
 	} elseif(isset($_POST['localzipfile'])) {
 		$local_zip_name = $_POST['localzipfile'];
-		$up_name = $_SESSION['mwbe_rel_path'] . $_SESSION['mwbe_up_dir'] . basename($_POST['localzipfile']);
+		$up_name = $_SESSION['mwbe_server_path'] . $_SESSION['mwbe_writable_dirs']['archives'] . "/" . basename($_POST['localzipfile']);
 		if(!copy($local_zip_name, $up_name)) {
 			echo "<text class=\"bad\">The local file could not be copied for use with MixWidget backend. Please check the path and your file permissions and try again.</text><br />\n";
 			exit(0);
@@ -358,7 +357,7 @@ function verify() {
 				}
 			}
 			echo "<text class=\"pr_foot\">...$pl_title by $pl_artist has been added to your playlist!</text><br /><br />\n";
-			$pl_full_path = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/" . htmlentities($pl_mp3, ENT_QUOTES);
+			$pl_full_path = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_writable_dirs']['tracks'] . $_SESSION['mw_mix_title_short'] . "/" . htmlentities($pl_mp3, ENT_QUOTES);
 			$tr_text = "\t\t<track>
 			\t\t\t<location>$pl_full_path</location>
 			\t\t\t<creator>$pl_artist</creator>
@@ -385,13 +384,134 @@ function verify() {
 	echo "<text class=\"pr_foot\">Your mix has been successfully created!</text><br /><br />
 	You may:
 	<ul>
-	<li><a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_html_dir'] .  $_SESSION['mw_mix_title_short'] . ".html\">View the .html file</a></li>
+	<li><a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_writable_dirs']['mixes'] .  $_SESSION['mw_mix_title_short'] . ".html\">View the .html file</a></li>
 	<li><a href=\"index.php\">Return to the Mix Widget Backend \"Main\" page.</li>
 	<li><a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_mixes_index'] . "\">View your Mix Widget Backend site index</a></li>
 	</ul>";
 }
 
 function makeconf() {
+	switch($_SESSION['mw_skin_img']) {
+		case "tak-sa-x.jpg":
+			$mw_skin_text = array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125");
+			break;
+		case "son-clear-green.jpg":
+			$mw_skin_text = array("tx" => "85", "ty" => "14", "ax" => "35", "ay" => "29");
+			break;
+		case "realistic.jpg":
+			$mw_skin_text = array("tx" => "35", "ty" => "39", "ax" => "35", "ay" => "26");
+			break;
+		case "interfunk.jpg":
+			$mw_skin_text = array("tx" => "85", "ty" => "17", "ax" => "85", "ay" => "30");
+			break;
+		case "Crown.jpg":
+			$mw_skin_text = array("tx" => "120", "ty" => "17", "ax" => "85", "ay" => "30");
+			break;
+		case "orwo-ugly.jpg":
+			$mw_skin_text = array("tx" => "52", "ty" => "29", "ax" => "56", "ay" => "12");
+			break;
+		case "AGFA_ferrocolor.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33");
+			break;
+		case "agfa-purple.jpg":
+			$mw_skin_text = array("tx" => "160", "ty" => "15", "ax" => "160", "ay" => "33");
+			break;
+		case "agfa-roscata.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33");
+			break;
+		case "Agfa_Verde.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33");
+			break;
+		case "agfa-yellow.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33");
+			break;
+		case "Lucky.jpg":
+			$mw_skin_text = array("tx" => "80", "ty" => "10", "ax" => "90", "ay" => "30");
+			break;
+		case "audiomagnetics_ugly.jpg":
+			$mw_skin_text = array("tx" => "50", "ty" => "18", "ax" => "55", "ay" => "33");
+			break;
+		case "Audio_Magnetics_Extra.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "60", "ay" => "40");
+			break;
+		case "baby-blue.jpg":
+			$mw_skin_text = array("tx" => "59", "ty" => "15", "ax" => "60", "ay" => "40");
+			break;
+		case "BASF.jpg":
+			$mw_skin_text = array("tx" => "140", "ty" => "15", "ax" => "140", "ay" => "33");
+			break;
+		case "Broadway.jpg":
+			$mw_skin_text = array("tx" => "28", "ty" => "15", "ax" => "190", "ay" => "15");
+			break;
+		case "elfra-yellow.jpg":
+			$mw_skin_text = array("tx" => "20", "ty" => "120", "ax" => "160", "ay" => "120");
+			break;
+		case "exclusiv.jpg":
+			$mw_skin_text = array("tx" => "160", "ty" => "18", "ax" => "160", "ay" => "39");
+			break;
+		case "hita-ex.jpg":
+			$mw_skin_text = array("tx" => "50", "ty" => "18", "ax" => "50", "ay" => "39");
+			break;
+		case "international.jpg":
+			$mw_skin_text = array("tx" => "20", "ty" => "120", "ax" => "160", "ay" => "120");
+			break;
+		case "lime-green.jpg":
+			$mw_skin_text = array("tx" => "74", "ty" => "17", "ax" => "74", "ay" => "34");
+			break;
+		case "low-noise-green.jpg":
+			$mw_skin_text = array("tx" => "58", "ty" => "17", "ax" => "35", "ay" => "34");
+			break;
+		case "mallory_fliptape.jpg":
+			$mw_skin_text = array("tx" => "54", "ty" => "17", "ax" => "54", "ay" => "34");
+			break;
+		case "marvel.jpg":
+			$mw_skin_text = array("tx" => "74", "ty" => "17", "ax" => "74", "ay" => "34");
+			break;
+		case "master.jpg":
+			$mw_skin_text = array("tx" => "124", "ty" => "17", "ax" => "99", "ay" => "30");
+			break;
+		case "max-udii.jpg":
+			$mw_skin_text = array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125");
+			break;
+		case "max-XLII.jpg":
+			$mw_skin_text = array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125");
+			break;
+		case "mrt-china.jpg":
+			$mw_skin_text = array("tx" => "54", "ty" => "17", "ax" => "54", "ay" => "34");
+			break;
+		case "orwo.jpg":
+			$mw_skin_text = array("tx" => "54", "ty" => "14", "ax" => "54", "ay" => "30");
+			break;
+		case "permaton.jpg":
+			$mw_skin_text = array("tx" => "54", "ty" => "25", "ax" => "54", "ay" => "30");
+			break;
+		case "Phil-happy.jpg":
+			$mw_skin_text = array("tx" => "70", "ty" => "20", "ax" => "70", "ay" => "35");
+			break;
+		case "philips.jpg":
+			$mw_skin_text = array("tx" => "65", "ty" => "15", "ax" => "25", "ay" => "30");
+			break;
+		case "realistic.jpg":
+			$mw_skin_text = array("tx" => "110", "ty" => "10", "ax" => "80", "ay" => "25");
+			break;
+		case "royal.jpg":
+			$mw_skin_text = array("tx" => "54", "ty" => "8", "ax" => "54", "ay" => "22");
+			break;
+		case "shanghaipai.jpg":
+			$mw_skin_text = array("tx" => "34", "ty" => "40", "ax" => "170", "ay" => "40");
+			break;
+		case "unbespielt.jpg":
+			$mw_skin_text = array("tx" => "34", "ty" => "130", "ax" => "170", "ay" => "130");
+			break;
+		case "univerisum.jpg":
+			$mw_skin_text = array("tx" => "20", "ty" => "38", "ax" => "210", "ay" => "38");
+			break;
+		case "TPII_90.jpg":
+			$mw_skin_text = array("tx" => "120", "ty" => "15", "ax" => "85", "ay" => "26");
+			break;
+		case "AMC_120.jpg":
+			$mw_skin_text = array("tx" => "60", "ty" => "15", "ax" => "28", "ay" => "35");
+	}
 	$conf_whole = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 	<widget version=\"2.1\" flashVersion=\"9.0.0\">
 	\t<title>" . $_SESSION['mw_mix_title'] . "</title> <!-- shown at opening -->
@@ -410,8 +530,8 @@ function makeconf() {
     \t\t<threaderColor>CCCCCC</threaderColor><!-- hex color-->
     \t\t<text size=\"18\" color=\"000000\" bgAlpha=\"0\" bgColor=\"FFFFFF\" align=\"LEFT\"></text>
     \t\t<!-- bgAlpha = 0-100, align = LEFT, CENTER, RIGHT -->
-	\t\t<trackText x=\"" . $_SESSION['mw_skin_tx'] . "\" y=\"" . $_SESSION['mw_skin_ty'] . "\" width=\"260\"></trackText>
-    \t\t<artistText x=\"" . $_SESSION['mw_skin_ax'] . "\" y=\"" . $_SESSION['mw_skin_ay'] . "\" width=\"260\"></artistText>
+	\t\t<trackText x=\"" . $mw_skin_text['tx'] . "\" y=\"" . $mw_skin_text['ty'] . "\" width=\"260\"></trackText>
+    \t\t<artistText x=\"" . $mw_skin_text['ax'] . "\" y=\"" . $mw_skin_text['ay'] . "\" width=\"260\"></artistText>
     \t</skin>
     </widget>";
 	$ver_conf = $_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_conf'];
@@ -422,15 +542,15 @@ function makeconf() {
 }
 
 function makehtml() {
-	$flash_src = $_SESSION['mwbe_site_url'] . $_SESSION['mw_main_swf'];
-	$flash_var_config = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
+	$flash_src = $_SESSION['mwbe_site_url'] . "/mixwidget/mixwidget.swf";
+	$flash_var_config = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_writable_dirs']['confs'] . $_SESSION['mw_mix_title_short'] . ".xml";
 	$flash_var_pl = $_SESSION['mwbe_site_url'] . $_SESSION['mw_mix_playlist'];
-	$flash_var_skin = $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_skins_dir'] . $_SESSION['mw_skin_img'];
+	$flash_var_skin = $_SESSION['mwbe_site_url'] . "/skins/" . $_SESSION['mw_skin_img'];
 	if(file_exists((string)$_SESSION['mwbe_server_path'] . $_SESSION['mw_mix_tracks_dir'] . "cover.jpg")) {
 		$html_cover = "<img src=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mw_mix_tracks_dir'] . "cover.jpg\">";
 	}
 	if ($_SESSION['mw_mix_allow_archive'] == "1") {
-		$html_archive = "<a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . '.zip' . "\">Track Archive</a>";
+		$html_archive = "<a href=\"" . $_SESSION['mwbe_site_url'] . $_SESSION['mwbe_writable_dirs']['archives'] . $_SESSION['mw_mix_title_short'] . '.zip' . "\">Track Archive</a>";
 	}
 	if ($_SESSION['mw_mix_allow_embed'] == "1") {
 		$html_embed = "<div class=\"embed\"><code>&lt;embed type=\"application/x-shockwave-flash\" width=\"430\" height=\"330\" src=\"$flash_src\" wmode=\"transparent\" flashvars=\"config=$flash_var_config&playlist=$flash_var_pl&skin=$flash_var_skin\"&gt;&lt;/embed&gt;</code></div>";
@@ -477,10 +597,7 @@ function validate() {
 		To re-check simply <a href=\"index.php?action=validate\">click here</a> or on the Validate menu option above.<br />
 		Once everything in both of the lists below is green then <a href=\"index.php?action=\"def\">click here</a> or click Main in the above menu.<br />\n";
 
-	$wdir_arr = array($_SESSION['mwbe_mixes'], $_SESSION['mwbe_playlist_dir'], $_SESSION['mwbe_conf_dir'], $_SESSION['mwbe_html_dir'], $_SESSION['mwbe_mixes_index'], $_SESSION['mwbe_tracks_dir'], $_SESSION['mwbe_up_dir']);
 	$rdir_arr = array("/mixwidget", "/resources", "/mixwidget/mixwidget.swf", "/mixwidget/.DS_Store", "/resources/expressInstall.swf", "/resources/swfobject.js", "/resources/.DS_Store", "/skins");
-	//($_SESSION['mw_dir'], $_SESSION['mw_resources'], $_SESSION['mwbe_skins_dir'], $_SESSION['mw_main_swf'], $_SESSION['mwbe_main_ds'], $_SESSION['mw_resources_swf'], $_SESSION['mw_resources_js'], $_SESSION['mw_resources_ds']);
-
 	echo "<div class=\"checks\"><h2>Writable File and Directory Checks</h2>\n";
 	foreach ($_SESSION['mwbe_writable_dirs'] as $wvalue) {
 		$wfile_test = $_SESSION['mwbe_server_path'] . $wvalue;

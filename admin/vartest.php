@@ -15,6 +15,5 @@ echo "SERVER VARS
 <pre>\n";
 print_r($_SERVER);
 echo "</pre>\n";
-
-
+echo "Archives: " . $_SESSION['mwbe_writable_dirs']['archives'];
 ?>
