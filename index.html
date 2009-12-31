@@ -1,0 +1,133 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>romeosidvicious/MixWidget-Back-End @ GitHub</title>
+	
+	<style type="text/css">
+		body {
+  		margin-top: 1.0em;
+  		background-color: #ff5e05;
+		  font-family: "Helvetica,Arial,FreeSans"; 
+  		color: #ffffff;
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+		h1 { font-size: 3.8em; color: #00a1fa; margin-bottom: 3px; }
+		h1 .small { font-size: 0.4em; }
+		h1 a { text-decoration: none }
+		h2 { font-size: 1.5em; color: #00a1fa; }
+    h3 { text-align: center; color: #00a1fa; }
+    a { color: #00a1fa; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+		pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+	</style>
+	
+</head>
+
+<body>
+  <a href="http://github.com/romeosidvicious/MixWidget-Back-End"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+  
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/romeosidvicious/MixWidget-Back-End/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/romeosidvicious/MixWidget-Back-End/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+      
+    <h1><a href="http://github.com/romeosidvicious/MixWidget-Back-End">MixWidget-Back-End</a> 
+      <span class="small">by <a href="http://github.com/romeosidvicious">romeosidvicious</a></span></h1>
+
+    <div class="description">
+      A php backend for MixWidget
+    </div>
+
+    <p>MixWidget Back End is a drop in back end to allow for the easy creation of flash based mix tapes. It is designed to be used with a single login, currently .htaccess based, on a website. It generates two pages for each mix the first being used for display on the public index page, which displays all of the mixes created, and the second page which is complete html and can be used for showing off a single mix of copying and pasting from the source to post the mix on a blog or other website. Options to present code for embedding and for presenting a link to an archive of all of the songs included in the mix are present as well as some cover art functionality.
+
+There is still a lot of work to be done but the functionality is stable. The interface is usable but not pretty. Currently no options exist for editing mixes outside of deleting mixes that have been created.
+
+The actual flash widget is not part of this project and available at: http://mixwidget.org/
+The skins included can be acquired from the above URL and are provided by: http://www.tapedeck.org/</p><h2>Dependencies</h2>
+<p>PHP 5.2
+getid3 (included)</p>
+<h2>Install</h2>
+<p>These instructions cover installation only. After install documentation is provided on using the MixWidget Back End.
+
+NOTE: If your webserver does not support .htaccess and .htpasswd you MUST secure the admin/ directory in some manner. If you do not anyone will be able to access this script and upload files to your server.
+
+
+Shell:
+
+Upload the MWBE tar.gz to your server.
+Login in to your shell and extract MWBE into whatever directory you wish.
+Change the admin password in admin/.htpasswd using .htpasswd
+
+Make the following files and dirs world readable/writable (chmod 777):
+whatever dir you uploaded MWBE to
+archives/
+confs/
+mixes/
+playlists/
+tracks/
+mixes.php
+
+Point your browser to http://www.yourdomain.com/<some dir where you extracted MWBE>/admin
+Start making mix tapes
+
+FTP:
+
+Extract the MWBE tar.gz to an empty directory on your hard drive
+Go to http://www.clockwatchers.com/htaccess_tool.html and scroll down to 2. .htpasswd Tool
+Put in a username and password and click Create It
+Go to the admin directory in the directory you just extracted the files and open .htpasswd with a text editor (notepad NOT wordpad)
+Delete the current username and password in .htpasswd and paste in the results from clockwatchers.com
+Use your FTP client to upload all of the files to an empty directory on your webserver
+Use your FTP client to make sure the following files and directories are readable and writable by everyone (world or 777 permissions):
+whatever dir you uploaded MWBE to
+archives/
+confs/
+mixes/
+playlists/
+tracks/
+mixes.php
+
+Point your browser to http://www.yourdomain.com/<some dir where you extracted MWBE>/admin
+Start making mix tapes</p>
+<h2>License</h2>
+<p>GPLv2</p>
+<h2>Authors</h2>
+<p>Romeo Sid Vicious (romeosidvicious@gmail.com)<br/><br/>      </p>
+<h2>Contact</h2>
+<p>Romeo Sid Vicious (romeosidvicious@gmail.com)<br/>      </p>
+
+
+    <h2>Download</h2>
+    <p>
+      You can download this project in either
+      <a href="http://github.com/romeosidvicious/MixWidget-Back-End/zipball/master">zip</a> or
+      <a href="http://github.com/romeosidvicious/MixWidget-Back-End/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/romeosidvicious/MixWidget-Back-End</pre>
+    </p>
+      
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/romeosidvicious/MixWidget-Back-End">romeosidvicious/MixWidget-Back-End</a>
+    </div>
+    
+  </div>
+
+  
+</body>
+</html>
