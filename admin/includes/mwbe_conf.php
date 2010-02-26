@@ -1,12 +1,6 @@
 <?php
 
 //Nothing below this line should need editing
-$_SESSION['mwbe_dir'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
-$_SESSION['mwbe_admin_path'] = $_SESSION['mwbe_dir'] . $_SESSION['mwbe_admin_dir'];
-$_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . $_SESSION['mwbe_dir'];
-$_SESSION['mwbe_rel_path'] = "../";
-$_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
-$_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . $_SESSION['mwbe_dir'];
 
 if (isset($_GET['action'])) {
 	$_SESSION['action'] = $_GET['action'];
@@ -16,14 +10,16 @@ if (isset($_GET['action'])) {
 	$_SESSION['action'] = "index";
 }
 
-$_SESSION['mwbe_writable_dirs'] = array("/playlists/", "/confs/", "/mixes/", "/tracks/", "/archives/");
+$_SESSION['mwbe_dir'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
+$_SESSION['mwbe_admin_path'] = $_SESSION['mwbe_dir'] . $_SESSION['mwbe_admin_dir'];
+$_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . $_SESSION['mwbe_dir'];
+$_SESSION['mwbe_rel_path'] = "../";
+$_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
+$_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . $_SESSION['mwbe_dir'];
+$_SESSION['mwbe_writable_dirs'] = array("/mixes/");
+$_SESSION['mwbe_mix_dir'] = "/mixes/";
 $_SESSION['mwbe_admin_dir'] = "/admin/";
-$_SESSION['mwbe_playlist_dir'] = "/playlists/";
-$_SESSION['mwbe_conf_dir'] = "/confs/";
-$_SESSION['mwbe_html_dir'] = "/mixes/";
-$_SESSION['mwbe_tracks_dir'] = "/tracks/";
-$_SESSION['mwbe_up_dir'] = "/archives/";
-$_SESSION['mwbe_cover_img'] = '/cover.jpg';
+$_SESSION['mwbe_temp_dir'] = $_SESSION['mwbe_admin_path'] . "/temp/";
 
 
 if ($_SESSION['mw_skin_img'] == "tak-sa-x.jpg") {
