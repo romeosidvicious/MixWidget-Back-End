@@ -1,27 +1,28 @@
 <?php
 
 function nav() {
+	global $static_conf;
 	unset($_SESSION['index_class']);
 	unset($_SESSION['editmix_class']);
 	unset($_SESSION['validate_class']);
 	unset($_SESSION['makemix_class']);
 	unset($_SESSION['mwbedocs_class']);
 	unset($_SESSION['upfiles_class']);
-	if ($_SESSION['action'] == "index") {
+	if ($static_conf->ACTION == "index") {
 		index();
-	} elseif ($_SESSION['action'] == "makemix") {
+	} elseif ($static_conf->ACTION == "makemix") {
 		makemix();
-	} elseif ($_SESSION['action'] == "upfiles") {
+	} elseif ($static_conf->ACTION == "upfiles") {
 		upfiles();
-	} elseif ($_SESSION['action'] == "verify") {
+	} elseif ($static_conf->ACTION == "verify") {
 		verify();
-	} elseif ($_SESSION['action'] == "validate") {
+	} elseif ($static_conf->ACTION == "validate") {
 		validate();
-	} elseif ($_SESSION['action'] == "editmix") {
+	} elseif ($static_conf->ACTION == "editmix") {
 		editmix();
-	} elseif ($_SESSION['action'] == "mwbedocs") {
+	} elseif ($static_conf->ACTION == "mwbedocs") {
 		mwbedocs();
-	} elseif ($_SESSION['action'] == "delmix") {
+	} elseif ($static_conf->ACTION == "delmix") {
 		delmix();
 	} else {
 		index();
@@ -41,21 +42,12 @@ function menu() {
 }
 
 function index() {
-	$_SESSION['index_class'] = "class=\"active\"";
+	global $index_class;
+	$index_class = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
 		<h2>Welcome to the Mix Widget Backend</h2>
-		Currently this interface is not very pretty and the only working functionality is making a mix by uploading a .zip file either via ftp or MWBE. 
-		Please see the included TODO for information on the planned feature set.<br />
-		The menu options perform the following actions:<br />
-		<ul>
-			<li>Main - Takes you to this page.</li>
-			<li>Make A Mix - Takes you to the interface for making a mix.</li>
-			<li>Edit Your Mixes - Is not currently implemented but will be where you go to edit existing mixes</li>
-			<li>Documentation - Is currently empty but will contain documentation for MWBE</li>
-			<li>Validate - Checks to see if all of the required files and directories exist and have the proper permissions.</li>
-		</ul>";
-
+		Click <em>Make A Mix</em> in the menu above to make a new mix!";
 	if (!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
@@ -67,8 +59,6 @@ function index() {
 			$conf_xml = simplexml_load_file("$xml");
 			$mix_title = (string)$conf_xml->title;
 			$_SESSION['mix_title'] =  $mix_title;
-			// Once mix editing works: Add in a link to the html file and css to make and edit link that is visibly different.
-			// echo "<a href=\"index.php?action=editmix&mix=$_SESSION['mix_name']\">$_SESSION['mix_title']</a><br />\n";
 			echo "<li><a href=\"" . $_SESSION['mwbe_dir'] . "/mixes/" . $_SESSION['mix_name'] . ".html\">" . $_SESSION['mix_title'] . "</a><br /></li>\n";
 		}
 		echo "</ul>\n";
@@ -141,107 +131,16 @@ function delmix() {
 }
 
 function makemix() {
+	require "modules/module_mix_define.php";
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
-	echo "<div id=\"content\">
-	<h2>Make a Mix - Choices, choices, choices...</h2>
-	Simply fill in the following information and click submit!
-	<form action=\"index.php?action=upfiles\" method=\"post\">
-	Mix Title: <input name=\"mix_title\" value=\"Mix Title\" type=\"text\" /><br />
-	Mix Artist: <input name=\"mix_artist\" value=\"Artist\" type=\"test\" /><br />
-	Do you wish to link to an archive of the tracks in the mix: Yes <input name=\"mwbe_archive_allow\" type=\"Radio\" value=\"1\" /> No <input name=\"mwbe_archive_allow\" type=\"Radio\" value=\"0\" /><br />
-	Do you wish to provide code to embed this mix on other sites: Yes <input name=\"mwbe_embed_allow\" type=\"Radio\" value=\"1\" /> No <input name=\"mwbe_embed_allow\" type=\"Radio\" value=\"0\" /><br />
-	Please select a skin for your mix tape:<br />
-	<table border=\"0\" cellpadding=\"1\">\n";
-
-	$skin_count = 1;
-	foreach (glob($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/*.jpg") as $skin) {
-		$skin_img = str_replace($_SESSION['mwbe_server_path'] . "/" . $_SESSION['mwbe_skins_dir'] . "/", '',$skin);
-		if ($skin_count == 1){
-			echo "\t<tr align=\"center\" valign=\"middle\">\n";
-		}
-		echo "\t\t<td><input name=\"skin_img\" type=\"Radio\" value=\"$skin_img\"><img align=\"middle\" height=\"64\" width=\"100\" src=\"" . $_SESSION['mwbe_site_url'] . "/skins/$skin_img\"><br />$skin_img</td>\n";
-		$skin_count++;
-		if ($skin_count == 7) {
-			echo "\t</tr>\n";
-			$skin_count = 1;
-		}
-
-	}
-	echo "</table>
-	<input type=\"submit\" />\n
-	</form>\n
-	<br /><br />";
+	define_mix();	
 }
 
 function upfiles() {
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
-	$_SESSION['mw_mix_title'] = $_POST['mix_title'];
-	$_SESSION['mw_mix_title_short'] = strtolower(preg_replace("/\W|\s/", "", $_SESSION['mw_mix_title']));
-	$_SESSION['mw_mix_artist'] = $_POST['mix_artist'];
-	$_SESSION['mw_mix_tracks_dir'] = $_SESSION['mwbe_tracks_dir'] . $_SESSION['mw_mix_title_short'] . "/";
-	$_SESSION['mw_mix_archive'] = $_SESSION['mwbe_up_dir'] . $_SESSION['mw_mix_title_short'] . ".zip";
-	$_SESSION['mw_mix_playlist'] = $_SESSION['mwbe_playlist_dir'] . $_SESSION['mw_mix_title_short'] . ".xspf";
-	$_SESSION['mw_mix_conf'] = $_SESSION['mwbe_conf_dir'] . $_SESSION['mw_mix_title_short'] . ".xml";
-	$_SESSION['mw_mix_html'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".html";
-	$_SESSION['mw_mix_include'] = $_SESSION['mwbe_html_dir'] . $_SESSION['mw_mix_title_short'] . ".include";
-	$_SESSION['mw_skin_img'] = $_POST['skin_img'];
-	$_SESSION['mw_mix_allow_archive'] = $_POST['mwbe_archive_allow'];
-	$_SESSION['mw_mix_allow_embed'] = $_POST['mwbe_embed_allow'];
-	echo "<div id=\"content\">
-		<h2>Make a Mix - Upload a .zip file...</h2>
-		<div class=\"selections\">
-		Your choices so far:
-		The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
-		The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
-		Your selected skin image is:<br />
-		<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
-		</div>
-		<h2>Select a .zip file containing the mp3 files you wish to use for your compilation.</h2>
-		<div class=\"directions\">
-			Some quick tips on formatting your MP3 file names:<br />
-			(These tips are due to limitations in MixWidget Frontend that I hope to fix in future releases.)
-		<text class=\"good\">
-		<ul>
-			<li>Your files will be added to the playlist in alphabetical order so please name them with that in mind.</li>
-			<ul>
-				<li>I suggest the following naming structure ##-songtitle.mp3 like: <i>01-mutiny.mp3</i></li>
-			</ul>
-			<li>Your files will be renamed to remove any special characters and spaces so don't worry about this beforehand.</li>
-			<ul>
-				<li>For instance <i>01 - Sinead O'Connor - Nothing Compares To You.mp3</i> will be <i>01-sineadoconnor-nothingcomparestoyou.mp3</i> after processing</li>
-			</ul>
-		</ul>
-		</text>
-		The .zip file must meet the following specifications or it will be removed to prevent any malicious uploads:
-		<text class=\"warn\">
-		<ul>
-			<li>Contain ONLY MP3 files and single cover.jpg.</li>
-			<li>Contain no path information. MixWidget Frontend doesn't parse any farther than the root of the zip file.</li>
-			<li>Contain no password information.</li>
-			<li>Not be a multi-part zip.</li>
-		</ul>
-		</text>
-		All of the files contained in the .zip file must meet the following specifications:
-		<text class=\"warn\">
-		<ul>
-			<li>All MP3s must be verifiable as MP3 files.</li>
-			<li>All MP3s must contain valid ID3v2 tags.</li>
-		</ul>
-		</text>
-	</div>
-	The maximum size file your server will allow to upload is: " . ini_get('upload_max_filesize') . ".<br />
-	Attempting to upload a larger file through MixWidget Back End will fail. If you need to upload a larger file please transfer the file to your server via FTP, SCP, or some other method and use the option to enter a path to a file on the server.<br />
-	<form enctype=\"multipart/form-data\" action=\"index.php?action=verify\" method=\"POST\">
-	Choose a zip file to upload: <input name=\"zipfile\" type=\"file\" />
-	<input type=\"submit\" value=\"Upload Zip File\" />
-	</form>
-	</div>
-	<form action=\"index.php?action=verify\" method=\"POST\">
-	Enter a path to a zip file on the server: <input name=\"localzipfile\" type=\"text\" />
-	<input type=\"submit\" value=\"Submit\" />
-	</form>";
+	
 }
 
 function verify() {

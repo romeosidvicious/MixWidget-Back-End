@@ -2,7 +2,7 @@
 /*
  * This modules provides validation functionality to MWBE
  */
-function file_info(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){ //Get the info needed to validate files
+function file_info($static_conf, &$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){
 	if(isset($_POST['file_type'])){
 		$file_type=$_POST['file_type'];
 	}else{
@@ -11,7 +11,6 @@ function file_info(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext
 	$file_ext=end(explode('.', $file_name));
 	$finfo=finfo_open(FILEINFO_MIME);
 	$file_mime_type=finfo_file($finfo, $file_name);
-	//select arrays based on file type
 	if($file_type="zip"){
 		$ext_whitelist=array('zip');
 		$type_whitelist=array('application/x-compressed', 'application/x-zip-compressed', 'application/zip');
@@ -48,7 +47,7 @@ function file_info(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext
 	$master_ext_blacklist=array('php', 'php3', 'php4', 'phtml','exe','sh','js','html');
 }
 
-function val_up_file(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){
+function val_up_file($static_conf, &$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){
 	file_info();
 	if(in_array($file_ext, $master_ext_blacklist)){
 		unlink($file_name);
@@ -62,7 +61,7 @@ function val_up_file(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$e
 	}
 }
 
-function val_extracted_file(&$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){
+function val_extracted_file($static_conf, &$file_type, &$file_ext, &$file_mime_type, &$file_name, &$ext_whitelist, &$type_whitelist, &$type_blacklist, &$master_ext_blacklist){
 	file_info();
 	if(in_array($file_ext, $master_ext_blacklist)){
 		unlink($file_name);

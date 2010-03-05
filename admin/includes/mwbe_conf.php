@@ -1,226 +1,77 @@
 <?php
 
-//Nothing below this line should need editing
+$tapes = array (
+	"tak-sa-x.jpg" => array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125"),
+	"son-clear-green.jpg" => array("tx" => "85", "ty" => "14", "ax" => "35", "ay" => "29"),
+	"realistic.jpg" => array("tx" => "35", "ty" => "39", "ax" => "35", "ay" => "26"),
+	"interfunk.jpg" => array("tx" => "85", "ty" => "17", "ax" => "85", "ay" => "30"),
+	"Crown.jpg" => array("tx" => "120", "ty" => "17", "ax" => "85", "ay" => "30"),
+	"orwo-ugly.jpg" => array("tx" => "52", "ty" => "29", "ax" => "56", "ay" => "12"),
+	"AGFA_ferrocolor.jpg" => array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33"),
+	"agfa-purple.jpg" => array("tx" => "160", "ty" => "15", "ax" => "160", "ay" => "33"),
+	"agfa-roscata.jpg" => array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33"),
+	"Agfa_Verde.jpg" => array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33"),
+	"agfa-yellow.jpg" => array("tx" => "59", "ty" => "15", "ax" => "65", "ay" => "33"),
+	"Lucky.jpg" => array("tx" => "80", "ty" => "10", "ax" => "90", "ay" => "30"),
+	"audiomagnetics_ugly.jpg" => array("tx" => "50", "ty" => "18", "ax" => "55", "ay" => "33"),
+	"Audio_Magnetics_Extra.jpg" => array("tx" => "59", "ty" => "15", "ax" => "60", "ay" => "40"),
+	"baby-blue.jpg" => array("tx" => "59", "ty" => "15", "ax" => "60", "ay" => "40"),
+	"BASF.jpg" => array("tx" => "140", "ty" => "15", "ax" => "140", "ay" => "33"),
+	"Broadway.jpg" => array("tx" => "28", "ty" => "15", "ax" => "190", "ay" => "15"),
+	"elfra-yellow.jpg" => array("tx" => "20", "ty" => "120", "ax" => "160", "ay" => "120"),
+	"exclusiv.jpg" => array("tx" => "160", "ty" => "18", "ax" => "160", "ay" => "39"),
+	"hita-ex.jpg" => array("tx" => "50", "ty" => "18", "ax" => "55", "ay" => "39"),
+	"international.jpg" => array("tx" => "20", "ty" => "120", "ax" => "160", "ay" => "120"),
+	"lime-green.jpg" => array("tx" => "74", "ty" => "17", "ax" => "74", "ay" => "34"),
+	"low-noise-green.jpg" => array("tx" => "58", "ty" => "17", "ax" => "35", "ay" => "34"),
+	"mallory_fliptape.jpg" => array("tx" => "54", "ty" => "17", "ax" => "54", "ay" => "34"),
+	"marvel.jpg" => array("tx" => "74", "ty" => "17", "ax" => "74", "ay" => "34"),
+	"master.jpg" => array("tx" => "124", "ty" => "17", "ax" => "99", "ay" => "30"),
+	"max-udii.jpg" => array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125"),
+	"max-XLII.jpg" => array("tx" => "120", "ty" => "125", "ax" => "35", "ay" => "125"),
+	"mrt-china.jpg" => array("tx" => "54", "ty" => "17", "ax" => "54", "ay" => "34"),
+	"orwo.jpg" => array("tx" => "54", "ty" => "14", "ax" => "54", "ay" => "30"),
+	"permaton.jpg" => array("tx" => "54", "ty" => "25", "ax" => "54", "ay" => "30"),
+	"Phil-happy.jpg" => array("tx" => "70", "ty" => "20", "ax" => "70", "ay" => "35"),
+	"philips.jpg" => array("tx" => "65", "ty" => "15", "ax" => "25", "ay" => "30"),
+	"realistic.jpg" => array("tx" => "110", "ty" => "10", "ax" => "80", "ay" => "25"),
+	"royal.jpg" => array("tx" => "54", "ty" => "8", "ax" => "54", "ay" => "22"),
+	"shanghaipai.jpg" => array("tx" => "34", "ty" => "40", "ax" => "170", "ay" => "40"),
+	"unbespielt.jpg" => array("tx" => "34", "ty" => "130", "ax" => "170", "ay" => "130"),
+	"univerisum.jpg" => array("tx" => "20", "ty" => "38", "ax" => "210", "ay" => "38"),
+	"TPII_90.jpg" => array("tx" => "120", "ty" => "15", "ax" => "85", "ay" => "26"),
+	"AMC_120.jpg" => array("tx" => "60", "ty" => "15", "ax" => "28", "ay" => "35")
+);
 
-if (isset($_GET['action'])) {
-	$_SESSION['action'] = $_GET['action'];
-} elseif (isset($_POST['action'])) {
-	$_SESSION['action'] = $_POST['action'];
-} else {
-	$_SESSION['action'] = "index";
+class ConfigCommon {
+	var $MWBE = array();
+	public function SetConf() {
+		$this->MWBE['ROOT'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
+		$this->MWBE['ADMIN_PATH'] = $this->MWBE['ROOT'] . $this->MWBE['ADMIN_DIR'];
+		$this->MWBE['SERVER_PATH'] = $_SERVER["DOCUMENT_ROOT"] . $this->MWBE['ROOT'];
+		$this->MWBE['REL_PATH'] = "../";
+		$this->MWBE['BASE_URL'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
+		$this->MWBE['SITE_URL'] = "http://" . $_SERVER["HTTP_HOST"] . $this->MWBE['ROOT'];
+		$this->MWBE['MIX_DIR'] = "/mixes/";
+		$this->MWBE['ADMIN_DIR'] = "/admin/";
+		$this->MWBE['TEMP_DIR'] = $_SESSION['mwbe_admin_path'] . "/temp/";
+		$this->MWBE['SKINS_DIR'] = "/skins/";
+	}
+	var $ACTION;
+	public function SetAction() {
+		if (isset($_GET['action'])) {
+			$this->Action = $_GET['action'];
+		} elseif (isset($_POST['action'])) {
+			$this->Action = $_POST['action'];
+		} else {
+			$this->Action = "index";
+		}
+
+	}
+	public $MWBE;
+	public $ACTION;
 }
-
-$_SESSION['mwbe_dir'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
-$_SESSION['mwbe_admin_path'] = $_SESSION['mwbe_dir'] . $_SESSION['mwbe_admin_dir'];
-$_SESSION['mwbe_server_path'] = $_SERVER["DOCUMENT_ROOT"] . $_SESSION['mwbe_dir'];
-$_SESSION['mwbe_rel_path'] = "../";
-$_SESSION['mwbe_base_url'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
-$_SESSION['mwbe_site_url'] = "http://" . $_SERVER["HTTP_HOST"] . $_SESSION['mwbe_dir'];
-$_SESSION['mwbe_writable_dirs'] = array("/mixes/");
-$_SESSION['mwbe_mix_dir'] = "/mixes/";
-$_SESSION['mwbe_admin_dir'] = "/admin/";
-$_SESSION['mwbe_temp_dir'] = $_SESSION['mwbe_admin_path'] . "/temp/";
-
-
-if ($_SESSION['mw_skin_img'] == "tak-sa-x.jpg") {
-	$_SESSION['mw_skin_tx'] = "120";
-	$_SESSION['mw_skin_ty'] = "125";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "125";
-} elseif ($_SESSION['mw_skin_img'] == "son-clear-green.jpg") {
-	$_SESSION['mw_skin_tx'] = "85";
-	$_SESSION['mw_skin_ty'] = "14";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "29";
-} elseif ($_SESSION['mw_skin_img'] == "realistic.jpg") {
-	$_SESSION['mw_skin_tx'] = "35";
-	$_SESSION['mw_skin_ty'] = "39";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "26";
-} elseif ($_SESSION['mw_skin_img'] == "interfunk.jpg") {
-	$_SESSION['mw_skin_tx'] = "85";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "85";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "Crown.jpg") {
-	$_SESSION['mw_skin_tx'] = "120";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "85";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "orwo-ugly.jpg") {
-	$_SESSION['mw_skin_tx'] = "52";
-	$_SESSION['mw_skin_ty'] = "29";
-	$_SESSION['mw_skin_ax'] = "56";
-	$_SESSION['mw_skin_ay'] = "12";
-} elseif ($_SESSION['mw_skin_img'] == "AGFA_ferrocolor.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "65";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "agfa-purple.jpg") {
-	$_SESSION['mw_skin_tx'] = "160";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "160";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "agfa-roscata.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "65";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "Agfa_Verde.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "65";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "agfa-yellow.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "65";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "Lucky.jpg") {
-	$_SESSION['mw_skin_tx'] = "80";
-	$_SESSION['mw_skin_ty'] = "10";
-	$_SESSION['mw_skin_ax'] = "90";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "audiomagnetics_ugly.jpg") {
-	$_SESSION['mw_skin_tx'] = "50";
-	$_SESSION['mw_skin_ty'] = "18";
-	$_SESSION['mw_skin_ax'] = "55";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "Audio_Magnetics_Extra.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "60";
-	$_SESSION['mw_skin_ay'] = "40";
-} elseif ($_SESSION['mw_skin_img'] == "baby-blue.jpg") {
-	$_SESSION['mw_skin_tx'] = "59";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "60";
-	$_SESSION['mw_skin_ay'] = "40";
-} elseif ($_SESSION['mw_skin_img'] == "BASF.jpg") {
-	$_SESSION['mw_skin_tx'] = "140";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "140";
-	$_SESSION['mw_skin_ay'] = "33";
-} elseif ($_SESSION['mw_skin_img'] == "Broadway.jpg") {
-	$_SESSION['mw_skin_tx'] = "28";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "190";
-	$_SESSION['mw_skin_ay'] = "15";
-} elseif ($_SESSION['mw_skin_img'] == "elfra-yellow.jpg") {
-	$_SESSION['mw_skin_tx'] = "20";
-	$_SESSION['mw_skin_ty'] = "120";
-	$_SESSION['mw_skin_ax'] = "160";
-	$_SESSION['mw_skin_ay'] = "120";
-} elseif ($_SESSION['mw_skin_img'] == "exclusiv.jpg") {
-	$_SESSION['mw_skin_tx'] = "160";
-	$_SESSION['mw_skin_ty'] = "18";
-	$_SESSION['mw_skin_ax'] = "160";
-	$_SESSION['mw_skin_ay'] = "39";
-} elseif ($_SESSION['mw_skin_img'] == "hita-ex.jpg") {
-	$_SESSION['mw_skin_tx'] = "50";
-	$_SESSION['mw_skin_ty'] = "18";
-	$_SESSION['mw_skin_ax'] = "50";
-	$_SESSION['mw_skin_ay'] = "39";
-} elseif ($_SESSION['mw_skin_img'] == "international.jpg") {
-	$_SESSION['mw_skin_tx'] = "20";
-	$_SESSION['mw_skin_ty'] = "120";
-	$_SESSION['mw_skin_ax'] = "160";
-	$_SESSION['mw_skin_ay'] = "120";
-} elseif ($_SESSION['mw_skin_img'] == "lime-green.jpg") {
-	$_SESSION['mw_skin_tx'] = "74";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "74";
-	$_SESSION['mw_skin_ay'] = "34";
-} elseif ($_SESSION['mw_skin_img'] == "low-noise-green.jpg") {
-	$_SESSION['mw_skin_tx'] = "58";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "34";
-} elseif ($_SESSION['mw_skin_img'] == "mallory_fliptape.jpg") {
-	$_SESSION['mw_skin_tx'] = "54";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "54";
-	$_SESSION['mw_skin_ay'] = "34";
-} elseif ($_SESSION['mw_skin_img'] == "marvel.jpg") {
-	$_SESSION['mw_skin_tx'] = "74";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "74";
-	$_SESSION['mw_skin_ay'] = "34";
-} elseif ($_SESSION['mw_skin_img'] == "master.jpg") {
-	$_SESSION['mw_skin_tx'] = "124";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "99";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "max-udii.jpg") {
-	$_SESSION['mw_skin_tx'] = "120";
-	$_SESSION['mw_skin_ty'] = "125";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "125";
-} elseif ($_SESSION['mw_skin_img'] == "max-XLII.jpg") {
-	$_SESSION['mw_skin_tx'] = "120";
-	$_SESSION['mw_skin_ty'] = "125";
-	$_SESSION['mw_skin_ax'] = "35";
-	$_SESSION['mw_skin_ay'] = "125";
-} elseif ($_SESSION['mw_skin_img'] == "mrt-china.jpg") {
-	$_SESSION['mw_skin_tx'] = "54";
-	$_SESSION['mw_skin_ty'] = "17";
-	$_SESSION['mw_skin_ax'] = "54";
-	$_SESSION['mw_skin_ay'] = "34";
-} elseif ($_SESSION['mw_skin_img'] == "orwo.jpg") {
-	$_SESSION['mw_skin_tx'] = "54";
-	$_SESSION['mw_skin_ty'] = "14";
-	$_SESSION['mw_skin_ax'] = "54";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "permaton.jpg") {
-	$_SESSION['mw_skin_tx'] = "54";
-	$_SESSION['mw_skin_ty'] = "25";
-	$_SESSION['mw_skin_ax'] = "54";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "Phil-happy.jpg") {
-	$_SESSION['mw_skin_tx'] = "70";
-	$_SESSION['mw_skin_ty'] = "20";
-	$_SESSION['mw_skin_ax'] = "70";
-	$_SESSION['mw_skin_ay'] = "35";
-} elseif ($_SESSION['mw_skin_img'] == "philips.jpg") {
-	$_SESSION['mw_skin_tx'] = "65";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "25";
-	$_SESSION['mw_skin_ay'] = "30";
-} elseif ($_SESSION['mw_skin_img'] == "realistic.jpg") {
-	$_SESSION['mw_skin_tx'] = "110";
-	$_SESSION['mw_skin_ty'] = "10";
-	$_SESSION['mw_skin_ax'] = "80";
-	$_SESSION['mw_skin_ay'] = "25";
-} elseif ($_SESSION['mw_skin_img'] == "royal.jpg") {
-	$_SESSION['mw_skin_tx'] = "54";
-	$_SESSION['mw_skin_ty'] = "8";
-	$_SESSION['mw_skin_ax'] = "54";
-	$_SESSION['mw_skin_ay'] = "22";
-} elseif ($_SESSION['mw_skin_img'] == "shanghaipai.jpg") {
-	$_SESSION['mw_skin_tx'] = "34";
-	$_SESSION['mw_skin_ty'] = "40";
-	$_SESSION['mw_skin_ax'] = "170";
-	$_SESSION['mw_skin_ay'] = "40";
-} elseif ($_SESSION['mw_skin_img'] == "unbespielt.jpg") {
-	$_SESSION['mw_skin_tx'] = "34";
-	$_SESSION['mw_skin_ty'] = "130";
-	$_SESSION['mw_skin_ax'] = "170";
-	$_SESSION['mw_skin_ay'] = "130";
-} elseif ($_SESSION['mw_skin_img'] == "univerisum.jpg") {
-	$_SESSION['mw_skin_tx'] = "20";
-	$_SESSION['mw_skin_ty'] = "38";
-	$_SESSION['mw_skin_ax'] = "210";
-	$_SESSION['mw_skin_ay'] = "38";
-} elseif ($_SESSION['mw_skin_img'] == "TPII_90.jpg") {
-	$_SESSION['mw_skin_tx'] = "120";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "85";
-	$_SESSION['mw_skin_ay'] = "26";
-} elseif ($_SESSION['mw_skin_img'] == "AMC_120.jpg") {
-	$_SESSION['mw_skin_tx'] = "60";
-	$_SESSION['mw_skin_ty'] = "15";
-	$_SESSION['mw_skin_ax'] = "28";
-	$_SESSION['mw_skin_ay'] = "35";
-}
+$static_conf = new ConfigCommon();
+$static_conf->SetConf();
+$static_conf->SetAction();
 ?>
