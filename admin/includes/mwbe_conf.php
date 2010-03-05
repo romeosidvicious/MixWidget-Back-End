@@ -44,20 +44,30 @@ $tapes = array (
 );
 
 class ConfigCommon {
-	var $MWBE = array();
 	public function SetConf() {
-		$this->MWBE['ROOT'] = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']);
-		$this->MWBE['ADMIN_PATH'] = $this->MWBE['ROOT'] . $this->MWBE['ADMIN_DIR'];
-		$this->MWBE['SERVER_PATH'] = $_SERVER["DOCUMENT_ROOT"] . $this->MWBE['ROOT'];
-		$this->MWBE['REL_PATH'] = "../";
-		$this->MWBE['BASE_URL'] = str_replace(basename($_SERVER['PHP_SELF']), '', $_SERVER['PHP_SELF']);
-		$this->MWBE['SITE_URL'] = "http://" . $_SERVER["HTTP_HOST"] . $this->MWBE['ROOT'];
-		$this->MWBE['MIX_DIR'] = "/mixes/";
-		$this->MWBE['ADMIN_DIR'] = "/admin/";
-		$this->MWBE['TEMP_DIR'] = $_SESSION['mwbe_admin_path'] . "/temp/";
-		$this->MWBE['SKINS_DIR'] = "/skins/";
+		$this->ROOT = preg_replace('/(\/admin)(.+)($)/', "", $_SERVER['PHP_SELF']); //MWBE install root
+		$this->SRV_PATH = $_SERVER["DOCUMENT_ROOT"] . $this->ROOT; //Path to MWBE root on filesystem
+		$this->SITE_URL = "http://" . $_SERVER["HTTP_HOST"] . $this->ROOT; //Web path to MWBE
+		$this->ADMIN_DIR = "/admin/";
+		$this->MIX_DIR = "/mixes/";
+		$this->TEMP_DIR = "/temp/";
+		$this->SKINS_DIR = "/skins/";
+		$this->INC_DIR = "/includes/";
+		$this->IMG_DIR = "/images/";
+		$this->ADMIN_PATH = $this->SRV_PATH . $this->ADMIN_DIR; //FS path to MWBE admin dir
+		$this->MIX_PATH = $this->SRV_PATH . $this->MIX_DIR; //FS path to mixes dir
+		$this->TEMP_PATH = $this->ADMIN_PATH . $this->TEMP_DIR; //FS path to temp dir
+		$this->SKINS_PATH = $this->SRV_PATH . $this->SKINS_DIR; //FS path to skins dir
+		$this->INC_PATH = $this->ADMIN_PATH . $this->INC_DIR; //FS path to includes dir
+		$this->IMG_PATH = $this->ADMIN_PATH . $this->IMG_DIR; //FS path to images dir
+		$this->ADMIN_URL = $this->SITE_URL . $this->ADMIN_DIR; //Web path to MWBE admin dir
+		$this->MIX_URL = $this->SITE_URL . $this->MIX_DIR; //Web path to mixes dir
+		$this->TEMP_URL = $this->ADMIN_URL . $this->TEMP_DIR; //Web path to temp dir
+		$this->SKINS_URL = $this->SITE_URL . $this->SKINS_DIR; //Web path to skins dir
+		$this->INC_URL = $this->ADMIN_URL . $this->INC_DIR; //Web path to includes dir
+		$this->IMG_URL = $this->ADMIN_URL . $this->IMG_DIR; //Web path to images dir		
 	}
-	var $ACTION;
+	
 	public function SetAction() {
 		if (isset($_GET['action'])) {
 			$this->Action = $_GET['action'];
@@ -68,9 +78,8 @@ class ConfigCommon {
 		}
 
 	}
-	public $MWBE;
-	public $ACTION;
 }
+
 $static_conf = new ConfigCommon();
 $static_conf->SetConf();
 $static_conf->SetAction();
