@@ -1,17 +1,13 @@
 <?php
 /*
- * This file provides upload functionality for MWBE
+ * This file provides file upload functionality for MWBE
  */
 
-function get_file(){
-	global $static_conf;
-	$_SESSION['title'] = "A Work Of Art"; //$_POST['title'];
-	$_SESSION['title_short'] = strtolower(preg_replace("/\W|\s/", "", $_SESSION['title']));
-	$_SESSION['artist'] = "William Whitmore"; //$_POST['artist'];
-	$_SESSION['skin'] = "Agfa_Verde.jpg"; //$_POST['skin'];
-	$_SESSION['arch_allow'] = "1"; //$_POST['arch_allow'];
-	$_SESSION['emb_allow'] = "1"; //$_POST['emb_allow'];
-	echo "<div id=\"content\">
+class UpFile {
+	
+	public function page_content(){
+		global $static_conf;
+		echo "<div id=\"content\">
 		<h2>Time to get your music on...</h2>
 		<div class=\"selections\">
 		Your choices so far:<br /><br />
@@ -42,26 +38,8 @@ function get_file(){
 	Or:
 	<form action=\"index.php?action=verify\" method=\"POST\">
 	Enter the name of the file you uploaded via FTP:<br /> 
-	<input name=\"localzipfile\" type=\"text\" /><input type=\"submit\" value=\"Submit\" />
+	<input name=\"local_file\" type=\"text\" /><input type=\"submit\" value=\"Submit\" />
 	</form>
 	</div>";
-}
-
-function what_file(){
-	//determine what kind of file we are dealing with
-}
-
-function archive_up(){
-	global $static_conf;
-
-}
-
-function mp3_up(){
-	global $static_conf;
-
-}
-
-function cover_up(){
-	global $static_conf;
-
+	}
 }

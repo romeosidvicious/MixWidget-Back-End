@@ -2,7 +2,7 @@
 
 function nav() {
 	global $static_conf;
-	unset($_SESSION['index_class']);
+	unset($_SESSION['$index_class']);
 	unset($_SESSION['editmix_class']);
 	unset($_SESSION['validate_class']);
 	unset($_SESSION['makemix_class']);
@@ -42,35 +42,35 @@ function menu() {
 }
 
 function index() {
-	global $index_class;
-	$index_class = "class=\"active\"";
+	global $static_conf;
+	$_SESSION['index_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
 		<h2>Welcome to the Mix Widget Backend</h2>
 		Click <em>Make A Mix</em> in the menu above to make a new mix!";
-	if (!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
+	if (!glob($static_conf->MIX_URL . "*/*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
 		echo "This is a list of the mixes you have created using the Mix Widget Backend. (Clicking the mix will take you to the .html page for that mix):<br />
 		<ul>\n";
-		foreach (glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
-			$_SESSION['mix_name'] = basename($xml, ".xml");
+		foreach(glob($static_conf->MIX_URL . "*/*.xml") as $xml) {
+			$mix_name = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
 			$mix_title = (string)$conf_xml->title;
-			$_SESSION['mix_title'] =  $mix_title;
-			echo "<li><a href=\"" . $_SESSION['mwbe_dir'] . "/mixes/" . $_SESSION['mix_name'] . ".html\">" . $_SESSION['mix_title'] . "</a><br /></li>\n";
+			echo "<li><a href=\"" . $static_conf->MIX_URL . $mix_name  . "/index.html\">" . $mix_title . "</a><br /></li>\n";
 		}
 		echo "</ul>\n";
 	}
 }
 
 function editmix() {
+	global $static_conf;
 	$_SESSION['editmix_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
 	<h2>This version of MixWidget only supports deleting your mixes so if you mess up you have to upload your mix again.<br />Editing existing mixes is coming soon...</h2><br />\n";
-	if(!glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml")) {
+	if(!glob($static_conf->MIX_URL . "*/*.xml")) {
 		echo "You currrently have no mixes!<br />\n";
 	} else {
 		echo "<h2>You currently have the following mixes:</h2>\n";
@@ -78,7 +78,7 @@ function editmix() {
 		<h2>WARNING</h2>
 		<strong>There is no verification for deleting mixes at the present time. If you press delete it WILL delete a mix without asking you to verify.</strong>
 		<ul>\n";
-		foreach(glob($_SESSION['mwbe_server_path'] . $_SESSION['mwbe_conf_dir'] . "*.xml") as $xml) {
+		foreach(glob($static_conf->MIX_URL . "*/*.xml") as $xml) {
 			$mix_name = basename($xml, ".xml");
 			$conf_xml = simplexml_load_file("$xml");
 			$mix_title = (string)$conf_xml->title;
@@ -91,39 +91,13 @@ function editmix() {
 }
 
 function delmix() {
+	global $static_conf;
 	$_SESSION['editmix_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
 	<h2>Removing " . $_POST['mix_title'] . " as requested</h2>
 	<div class=\"process\">\n";
-		
-	foreach($_SESSION['mwbe_writable_dirs'] as $mix_del_dir) {
-		switch($mix_del_dir) {
-		case '/mixes/':
-			echo "Removing html file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html<br />\n";
-			echo "Removing include file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".html");
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".include");
-			break;
-		case '/confs/':
-			echo "Removing configuration file for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".xml");
-			break;
-		case '/archives/':
-			echo "Removing zip archive for " . $_POST['mix_title'] . ":"  . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip<br />\n";
-			unlink($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . ".zip");
-			break;
-		case '/tracks/':
-			foreach(glob($_SESSION['mwbe_server_path'] . $mix_del_dir . $_POST['mix_name'] . "/*") as $mix_del_track) {
-				echo "Removing track: $mix_del_track for " . $_POST['mix_title'] . "<br />\n";
-				unlink($mix_del_track);
-			}
-			echo "Removing tracks directory for " . $_POST['mix_title'] . ":" . $_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name'] . "<br />\n";
-			closedir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
-			rmdir($_SESSION['mwbe_server_path'] . "$mix_del_dir" . $_POST['mix_name']);
-			break;
-		}
-	}
+		unlink($static_conf->MIX_PATH . "/" . $_POST['mix_name']);
 	echo "</div>
 	<h2>If You Don't See Any Errors We Deleted " .  $_POST['mix_title'] . " Successfully!</h2>
 	<h2>If You Do See Errors Copy Them And Send Them To romeosidvicious [at] gmail so I can try and fix the issue.</h2>";
@@ -131,19 +105,42 @@ function delmix() {
 }
 
 function makemix() {
+	global $static_conf;
 	require "modules/module_mix_define.php";
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
-	define_mix();	
+	$new_mix = new NewMix;
+	$new_mix->define_mix();		
 }
 
 function upfiles() {
+	global $static_conf;
 	$_SESSION['makemix_class'] = "class=\"active\"";
+	require "modules/module_mix_define.php";
+	require "modules/module_upload.php";
+	$new_mix = new NewMix;
+	$new_mix->mix_vars();
 	menu();
-	
+	$pre_up = new UpFile;
+	$pre_up->page_content();
 }
 
 function verify() {
+	global $static_conf;
+	$_SESSION['makemix_class'] = "class=\"active\"";
+	require "modules/module_validate.php";
+	menu();
+	$validate = new ValidateFile;
+	$validate->page_content();
+	if(isset($_POST['local_file'])){
+		$validate->verify_file($_POST['local_file']);
+		$_SESSION['file'] = $_POST['local_file'];
+	}else{
+		
+	}
+}
+
+function old_verify() {
 	$_SESSION['makemix_class'] = "class=\"active\"";
 	menu();
 	echo "<div id=\"content\">
@@ -153,7 +150,7 @@ function verify() {
 	The title for your mix will be: " . $_SESSION['mw_mix_title'] . "<br />
 	The artist for your mix is: " . $_SESSION['mw_mix_artist'] . "<br />
 	Your selected skin image is:<br />
-	<img height=\"64\" width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
+	<img width=\"100\" src= \"" . $_SESSION['mwbe_site_url'] . "/" . $_SESSION['mwbe_skins_dir'] . "/" . $_SESSION['mw_skin_img'] . "\"><br />
 	</div>";
 
 	$zip_ext_whitelist = array('zip');
